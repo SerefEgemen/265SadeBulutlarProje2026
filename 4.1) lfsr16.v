@@ -21,19 +21,19 @@ module lfsr16 #(
 ) (
     input  wire        clk,
     input  wire        rst,     // senkron, aktif-yuksek reset
-    output reg  [15:0] value    // her clock'ta guncellenen LFSR degeri
+    output reg  [15:0] deger    // her clock'ta guncellenen LFSR degeri
 );
 
     wire feedback;
 
     // Taps: bit15, bit13, bit12, bit10 (0-indeksli, x^16,x^14,x^13,x^11'e karsilik gelir)
-    assign feedback = value[15] ^ value[13] ^ value[12] ^ value[10];
+    assign feedback = deger[15] ^ deger[13] ^ deger[12] ^ deger[10];
 
     always @(posedge clk) begin
         if (rst)
-            value <= SEED;
+            deger <= SEED;
         else
-            value <= {value[14:0], feedback};
+            deger <= {deger[14:0], feedback};
     end
 
 endmodule
