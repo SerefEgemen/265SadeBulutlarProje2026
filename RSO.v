@@ -23,33 +23,33 @@
 module random_delay_gen (
     input  wire        clk,
     input  wire        rst,
-    input  wire        trigger,       // BTNC pulse (tek cycle'lik)
-    input  wire [15:0] lfsr_value,    // lfsr16 modulunden gelen anlik deger
-    input  wire        difficulty,    // 0 = kolay, 1 = zor
-    output reg  [29:0] wait_cycles,   // hesaplanan bekleme suresi (cycle)
-    output reg         wait_cycles_valid
+    input  wire        tetiklenme,       // BTNC pulse (tek cycle'lik)
+    input  wire [15:0] lfsr_deger,    // lfsr16 modulunden gelen anlik deger
+    input  wire        zorluk,    // 0 = kolay, 1 = zor
+    output reg  [29:0] bekleme_sure,   // hesaplanan bekleme suresi (cycle)
+    output reg         sure_bekleme_gecerli 
 );
 
     // Zorluk moduna gore sinir degerleri (100 MHz clock varsayimiyla)
-    localparam [29:0] EASY_MIN  = 30'd200_000_000; // 2.0 s
-    localparam [29:0] EASY_ARA = 30'd300_000_000; // 5.0s - 2.0s
-    localparam [29:0] HARD_MIN  = 30'd50_000_000;  // 0.5 s
-    localparam [29:0] HARD_ARA = 30'd450_000_000; // 5.0s - 0.5s
+    localparam [29:0] KOLAY_MIN  = 30'd200_000_000; // 2.0 s
+    localparam [29:0] KOLAY_ARA = 30'd300_000_000; // 5.0s - 2.0s
+    localparam [29:0] ZOR_MIN  = 30'd50_000_000;  // 0.5 s
+    localparam [29:0] ZOR_ARA = 30'd450_000_000; // 5.0s - 0.5s
 
     reg [15:0] lfsr_anlik;
-    reg [29:0] min_cycles;
+    reg [29:0] min_sure;
     reg [29:0] ara;
-    reg [45:0] asil_result;   // 16 bit * 30 bit = 46 bit genislik
-    reg        stage1_valid, stage2_valid;
+    reg [45:0] asil_sonuc;   // 16 bit * 30 bit = 46 bit genislik
+    reg        asama1_gecerli, stage2_gecerli;
 
     // Zorluk secimine gore min/span degerlerini belirle (kombinasyonel)
     always @(*) begin
-        if (difficulty == 1'b0) begin
-            min_cycles = EASY_MIN;
-            span       = EASY_ARA;
+        if (zorluk == 1'b0) begin
+            min_sure = KOLAY_MIN;
+            ara      = KOLAY_ARA;
         end else begin
-            min_cycles = HARD_MIN;
-            span       = HARD_ARA;
+            min_cycles = ZOR_MIN;
+            ara      = ZOR_ARA;
         end
     end
 
@@ -57,31 +57,31 @@ module random_delay_gen (
     always @(posedge clk) begin
         if (rst) begin
             lfsr_anlik     <= 16'd0;
-            asil_result       <= 46'd0;
-            wait_cycles       <= 30'd0;
-            stage1_valid      <= 1'b0;
-            stage2_valid      <= 1'b0;
-            wait_cycles_valid <= 1'b0;
+            asil_sonuc       <= 46'd0;
+            bekleme_sure       <= 30'd0;
+            asama1_gecerli      <= 1'b0;
+            asama2_gecerli      <= 1'b0;
+            sure_bekleme_gecerli <= 1'b0;
         end else begin
             // Stage 0 -> 1: trigger geldiginde LFSR'yi yakala ve carpmayi baslat
-            if (trigger) begin
-                lfsr_anlik <= lfsr_value;
-                asil_result   <= lfsr_value * span;   // span, ayni cycle'daki (*) kombinasyonel degeri
-                stage1_valid  <= 1'b1;
+            if (tetiklenme) begin
+                lfsr_anlik <= lfsr_deger;
+                asil_sonuc   <= lfsr_deger * ara;   // span, ayni cycle'daki (*) kombinasyonel degeri
+                asama1_gecerli  <= 1'b1;
             end else begin
-                stage1_valid  <= 1'b0;
+                asama1_gecerli  <= 1'b0;
             end
 
             // Stage 1 -> 2: carpma sonucunu olcekle (>>16) ve min_cycles ekle
-            if (stage1_valid) begin
-                wait_cycles  <= min_cycles + (mult_result >> 16);
+            if (asama1_gecerli) begin
+                sure_bekleme  <= min_sure + (asil_sonuc >> 16);
                 stage2_valid <= 1'b1;
             end else begin
-                stage2_valid <= 1'b0;
+                asama2_sonuc <= 1'b0;
             end
 
             // Stage 2 -> cikis gecerli
-            wait_cycles_valid <= stage2_valid;
+            sure_bekleme_gecerli  <= asama2_gecerli;
         end
     end
 
