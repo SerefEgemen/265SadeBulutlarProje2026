@@ -57,7 +57,7 @@ module random_delay_gen (
     always @(posedge clk) begin
         if (rst) begin
             lfsr_anlik     <= 16'd0;
-            mult_result       <= 46'd0;
+            asil_result       <= 46'd0;
             wait_cycles       <= 30'd0;
             stage1_valid      <= 1'b0;
             stage2_valid      <= 1'b0;
