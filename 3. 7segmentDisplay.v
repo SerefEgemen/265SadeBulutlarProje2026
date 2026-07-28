@@ -288,7 +288,7 @@ always@(posedge clk) begin
        
         else if(sayac == 30'd899_999_999) begin
 
-            sayac <= 30'b0;
+            sayac <= 30'd0;
             bitis <= 1'd0;
 
         end
