@@ -35,137 +35,101 @@ bitis sinyalini yakalamak mümkün olacaktır.
 module segmentDisplay7(
 
 input clk, 
-
 input resetSW15, //Switch15'den gelen reset sinyali.
-
 input [3:0] turNumarasi, //turnNO inputu değil. Kaçıncı turda olunduğuna dair girdi.
-
 input kararmaSinyali, //LSFR modülünden gelen Displaydeki ışıkları söndürmeye yarayan sinyal.
 
 output reg[6:0]  seg, 
-
 output reg[3:0] an, 
-
 output bitisSinyali // sayma işlemi bittiği zaman 1 değerini alır.
 
 );
 
 reg enable = 1'b0;
-
 reg [16:0] milisaniyesayaci = 17'd0;
-
 reg [29:0] sayac = 30'd0; 
-
 reg [1:0] hane = 2'd0;
-
 reg [1:0] haneSayici = 2'd0; 
-
 reg bitis = 1'b0; 
 
 always@(*) begin
-    
     enable = 1'b1;
     an = 4'b1111;      
     seg = 7'b1111111;  
     hane = 2'd0; //Bu kısım latch durumunu engellemek için girilen değerler.
 
     if(resetSW15 || kararmaSinyali) begin
-        
         an = 4'b1111;
         seg = 7'b1111111;
         enable = 1'b0;
         hane = 2'd0;
-        
     end
 
     if(!resetSW15 && !kararmaSinyali) begin
 
         if(turNumarasi[0] == 1'b0) begin //Tur numarası çift sayı iken Displayde gösterilecek sayı sıralaması. Eğer sayının least significant biti 0 ise sayı tamamen çift sayıların toplamından oluşuyordur. Bu durumda sayı çift olacaktır çiftlik kontrolü yapılırken LSB ye bakılır.
-            
+           
             if(sayac < 30'd99_999_999) begin //Display üzerinde yalnızca 1 segmentin gösterileceği blok.
-                
                 an = 4'b0111;
                 seg = 7'b1001111; //Display üzerinde 1 sayısını gösterir.
-
             end
             
             else if(sayac < 30'd199_999_999) begin // Display üzerinde 2 segmentin gösterileceği blok. İçerisinde 2 segmente erişen if blokları mevcut.
-                
                 hane = 2'd1;
-
-                if(haneSayici == 2'd0) begin
-                    
+                
+                if(haneSayici == 2'd0) begin  
                     an = 4'b0111;
                     seg = 7'b1001111; //Display üzerinde 1 sayısını gösterir.
-
                 end
                 
-                if(haneSayici == 2'd1) begin
-                    
+                if(haneSayici == 2'd1) begin  
                     an = 4'b1011;
                     seg = 7'b0010010; //Display üzerinde 2 sayısını gösterir.
-
                 end
 
             end
 
             else if(sayac < 30'd299_999_999) begin // Display üzerinde 3 segmentin gösterileceği blok. İçerisinde 3 segmente erişen if blokları mevcut.
-
                 hane = 2'd2;
-
+               
                 if(haneSayici == 2'd0) begin
-                    
                     an = 4'b0111;
                     seg = 7'b1001111; //Display üzerinde 1 sayısını gösterir.
-
                 end
 
-                if(haneSayici == 2'd1) begin
-                    
+                if(haneSayici == 2'd1) begin        
                     an = 4'b1011;
                     seg = 7'b0010010; //Display üzerinde 2 sayısını gösterir.
-
                 end
 
-                if(haneSayici == 2'd2) begin
-                    
+                if(haneSayici == 2'd2) begin                    
                     an = 4'b1101;
                     seg = 7'b0000110; //Display üzerinde 3 sayısını gösterir.
-
                 end
             
             end
 
             else if(sayac < 30'd899_999_999) begin // Display üzerinde 4 segmentin gösterileceği blok. İçerisinde 4 segmente erişen if blokları mevcut. Alttaki tur numarası tek olan içinki blokta neden 299_999_999 dan sonra bir anda 899_999_999 a atladığı yazılı.
-
                 hane = 2'd3;     
 
-                if(haneSayici == 2'd0) begin
-                    
+                if(haneSayici == 2'd0) begin                    
                     an = 4'b0111;
                     seg = 7'b1001111; //Display üzerinde 1 sayısını gösterir
-
                 end
 
-                if(haneSayici == 2'd1) begin
-                    
+                if(haneSayici == 2'd1) begin                   
                     an = 4'b1011;
                     seg = 7'b0010010; //Display üzerinde 2 sayısını gösterir
-
                 end
 
-                if(haneSayici == 2'd2) begin
-                    
+                if(haneSayici == 2'd2) begin                    
                     an = 4'b1101;
                     seg = 7'b0000110; //Display üzerinde 3 sayısını gösterir.
-
                 end
 
-                if(haneSayici == 2'd3) begin
-                    
+                if(haneSayici == 2'd3) begin                    
                     an = 4'b1110;
                     seg = 7'b1001100; //Display üzerinde 4 sayısını gösterir
-
                 end
 
             end
@@ -174,90 +138,67 @@ always@(*) begin
 
         if(turNumarasi[0] == 1'b1) begin //Tur numarası tek sayı iken Displayde gösterilecek sayı sıralaması. Eğer sayının least significant bit değeri 1 ise sayıya 1 ekleniyor demektir. çift + tek = tek olduğundan sayının tek olup olmaması LSB ile kontrol edilebilir.
             
-            if(sayac < 30'd99_999_999) begin //Display üzerinde yalnızca 1 segmentin gösterileceği blok.
-                
+            if(sayac < 30'd99_999_999) begin //Display üzerinde yalnızca 1 segmentin gösterileceği blok.               
                 an = 4'b0111;
                 seg = 7'b0100100; //Display üzerinde 5 sayısını gösterir.
-
             end
             
-            else if(sayac < 30'd199_999_999) begin // Display üzerinde 2 segmentin gösterileceği blok. İçerisinde 2 segmente erişen if blokları mevcut.
-                
+            else if(sayac < 30'd199_999_999) begin // Display üzerinde 2 segmentin gösterileceği blok. İçerisinde 2 segmente erişen if blokları mevcut.                
                 hane = 2'd1;
 
-                if(haneSayici == 2'd0) begin
-                    
+                if(haneSayici == 2'd0) begin                    
                     an = 4'b0111;
                     seg = 7'b0100100; //Display üzerinde 5 sayısını gösterir.
-
                 end
                 
-                if(haneSayici == 2'd1) begin
-                    
+                if(haneSayici == 2'd1) begin                    
                     an = 4'b1011;
                     seg = 7'b0100000; //Display üzerinde 6 sayısını gösterir.
-
                 end
 
             end
 
             else if(sayac < 30'd299_999_999) begin // Display üzerinde 3 segmentin gösterileceği blok. İçerisinde 3 segmente erişen if blokları mevcut.
-
                 hane = 2'd2;
 
-                if(haneSayici == 2'd0) begin
-                    
+                if(haneSayici == 2'd0) begin                    
                     an = 4'b0111;
                     seg = 7'b0100100; //Display üzerinde 5 sayısını gösterir.
-
                 end
 
-                if(haneSayici == 2'd1) begin
-                    
+                if(haneSayici == 2'd1) begin                    
                     an = 4'b1011;
                     seg = 7'b0100000; //Display üzerinde 6 sayısını gösterir.
-
                 end
 
-                if(haneSayici == 2'd2) begin
-                    
+                if(haneSayici == 2'd2) begin                    
                     an = 4'b1101;
-                    seg = 7'b0001111; //Display üzerinde 7 sayısını gösterir.
-                    
+                    seg = 7'b0001111; //Display üzerinde 7 sayısını gösterir.                    
                 end
 
             end
 
             else if(sayac < 30'd899_999_999) begin // Display üzerinde 4 segmentin gösterileceği blok. İçerisinde 4 segmente erişen if blokları mevcut. Dikkat edilirse 4. saniyeden 9. saniyeye kadar kapsar. Bunun sebebi LSFR sinyali gelene kadar 4 hanede sayı gösterilmesidir. LSFR nin hangi değeri üretip ne zaman karartma sinyali yollayacağı bilinmediğinden maksimum üretebileceği değer olan 5 saniyeye kadar bekler yani toplam 9 saniye!
-
                 hane = 2'd3;
 
-                if(haneSayici == 2'd0) begin
-                    
+                if(haneSayici == 2'd0) begin                    
                     an = 4'b0111;
                     seg = 7'b0100100; //Display üzerinde 5 sayısını gösterir
-
                 end
 
-                if(haneSayici == 2'd1) begin
-                    
+                if(haneSayici == 2'd1) begin                   
                     an = 4'b1011;
                     seg = 7'b0100000; //Display üzerinde 6 sayısını gösterir
-
                 end
 
-                if(haneSayici == 2'd2) begin
-                    
+                if(haneSayici == 2'd2) begin          
                     an = 4'b1101;
                     seg = 7'b0001111; //Display üzerinde 7 sayısını gösterir
-
                 end
 
-                if(haneSayici == 2'd3) begin
-                    
+                if(haneSayici == 2'd3) begin                    
                     an = 4'b1110;
                     seg = 7'b0000000; //Display üzerinde 8 sayısını gösterir
-
                 end
 
             end
@@ -280,24 +221,18 @@ always@(posedge clk) begin
     else if(enable) begin
         
         if(sayac == 30'd399_999_999) begin
-
             sayac <= sayac + 1;
             bitis <= 1'd1;
-
         end
        
         else if(sayac == 30'd899_999_999) begin
-
             sayac <= 30'd0;
             bitis <= 1'd0;
-
         end
 
         else begin
-
             sayac <= sayac + 1'b1;
             bitis <= 1'd0;
-
         end
 
     end
@@ -306,45 +241,36 @@ end
 
 always@(posedge clk) begin
      
-    if(resetSW15 || kararmaSinyali) begin
-    
+    if(resetSW15 || kararmaSinyali) begin    
         haneSayici <= 2'd0;
         milisaniyesayaci <= 17'd0;
-
     end
 
     else if(enable) begin // Bu blok sayesinde aynı anda yakılamayan display ledlerini aynı anda yakabiliriz. 2-3-4 sayıyıya aynı anda yakabilmemizi sağlar. 
         
-        if(milisaniyesayaci == 17'd99_999) begin 
-       
+        if(milisaniyesayaci == 17'd99_999) begin  
             milisaniyesayaci <= 17'd0;
             
             if(hane == 2'd1) begin // hane = 1'd0 durumu default durumdur bir şey ifade etmez. Bu durumda Displayde sadece 1 segmentte sayı gösterilir diyebiliriz.
-            
                 haneSayici <= haneSayici + 1'b1;
             
                 if(haneSayici == 2'd1)   
-                
                     haneSayici <= 2'd0;
 
             end
 
             if(hane == 2'd2) begin
-            
                 haneSayici <= haneSayici + 1'b1;
             
                 if(haneSayici == 2'd2)   
-                
                     haneSayici <= 2'd0;
 
             end
 
             if(hane == 2'd3) begin
-            
                 haneSayici <= haneSayici + 1'b1;
 
-                if(haneSayici == 2'd3)   
-
+                if(haneSayici == 2'd3)  
                     haneSayici <= 2'd0;
 
             end
@@ -352,7 +278,7 @@ always@(posedge clk) begin
         end
 
         else begin
-           
+    
             milisaniyesayaci <= milisaniyesayaci + 1'b1; 
 
         end
@@ -360,6 +286,7 @@ always@(posedge clk) begin
     end
 
 end
+    
 endmodule
 
 
