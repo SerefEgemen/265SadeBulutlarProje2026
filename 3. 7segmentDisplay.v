@@ -42,9 +42,9 @@ input [3:0] turNumarasi, //turnNO inputu değil. Kaçıncı turda olunduğuna da
 
 input kararmaSinyali, //LSFR modülünden gelen Displaydeki ışıkları söndürmeye yarayan sinyal.
 
-output reg  seg[6:0], 
+output reg[6:0]  seg, 
 
-output reg an[3:0], 
+output reg[3:0] an, 
 
 output bitisSinyali // sayma işlemi bittiği zaman 1 değerini alır.
 
@@ -360,6 +360,7 @@ always@(posedge clk) begin
     end
 
 end
+endmodule
 
 
 
@@ -475,11 +476,8 @@ end
 
 
 
-
-
-
-
-//¿Qué es este invento capitalista?
+/*
+  ¿Qué es este invento capitalista?
 
 ⠀⠀⠀⠀⠀⠀⠀⠀⣀⣤⣶⣶⣿⣿⣷⣶⣶⣦⣄⡀⠀⠀⠀⠀⠀⠀⠀⠀
 ⠀⠀⠀⠀⠀⠀⢠⣾⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣷⣦⡀⠀⠀⠀⠀⠀
@@ -498,3 +496,5 @@ end
 ⠀⠀⠀⠰⣶⣷⠀⠀⢈⡉⠻⢿⣿⣦⣄⣰⣼⣿⣿⣿⣿⣿⡉⠑⠢⣄⡀⠀
 ⠀⠀⠀⠀⠨⣿⣦⡀⠀⢻⡄⠙⣿⣿⣿⣿⣷⣾⣿⣿⣿⣿⣧⠀⠀⠙⠉⠂
 ⠀⠀⠀⠀⠀⠀⠀⠉⠀⠀⠉⠀⠉⠉⠛⠻⠿⠿⠻⡇⠈⠙⠿⠀⠀⠀⠀⠀
+
+*/
