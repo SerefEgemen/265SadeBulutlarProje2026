@@ -19,6 +19,9 @@ playersIn (4 bits)
     playersIn[1] = is player2 in the game or not
     playersIn[2] = is player3 in the game or not
     playersIn[3] = is player4 in the game or not
+    
+playersPenalized (4 bits)
+    same thing as playersIn. But if the elimination Mode isn't active, we have to make a distinction
 
 clk (1 bit)
 rst (1 bit)
@@ -43,7 +46,7 @@ The previous turn's lights stay lit until the next turn is over.
 */
 
 
-module playerLEDs(input clk, rst, input[1:0] player1Place, player2Place, player3Place, player4Place, input[3:0] playersIn, input gameOver, input[1:0] winner,
+module playerLEDs(input clk, rst, input[1:0] player1Place, player2Place, player3Place, player4Place, input[3:0]playersIn, playersPenalized, input gameOver, input[1:0] winner,
 output reg[15:0] leds
     );
     
@@ -99,6 +102,9 @@ output reg[15:0] leds
     
     //player1
     if(playersIn[0]) begin //The player is playing
+    if(playersPenalized[0]) begin //the player got penalized but not eliminated. This is specifically here because the elimination mode can be off.
+    player1Leds <= 4'b0000;
+    end else begin
     case(player1Place)
     2'b00: begin
     player1Leds <= 4'b1111; //1st place, 4 lights
@@ -114,12 +120,16 @@ output reg[15:0] leds
     end
     endcase //repeat this for the other 3 players. Draws are also possible with this
     end
+    end
     else begin //The player is not playing. Either eliminated or the game was started with less players
     player1Leds <= 4'b0000;
     end
     
     //player2
     if(playersIn[1]) begin
+    if(playersPenalized[1]) begin
+    player2Leds <= 4'b0000;
+    end else begin
     case(player2Place)
     2'b00: begin
     player2Leds <= 4'b1111;
@@ -135,12 +145,16 @@ output reg[15:0] leds
     end
     endcase
     end
+    end
     else begin
     player2Leds <= 4'b0000;
     end
     
     //player3
     if(playersIn[2]) begin
+    if(playersPenalized[2]) begin
+    player2Leds <= 4'b0000;
+    end else begin
     case(player3Place)
     2'b00: begin
     player3Leds <= 4'b1111;
@@ -156,12 +170,16 @@ output reg[15:0] leds
     end
     endcase
     end
+    end
     else begin
     player3Leds <= 4'b0000;
     end 
       
     //player4
-    if(playersIn[4]) begin
+    if(playersIn[3]) begin
+    if(playersPenalized[3]) begin
+    player2Leds <= 4'b0000;
+    end else begin
     case(player4Place)
     2'b00: begin
     player4Leds <= 4'b1111;
@@ -176,6 +194,7 @@ output reg[15:0] leds
     player4Leds <= 4'b0001;
     end
     endcase
+    end
     end
     else begin
     player4Leds <= 4'b0000;
