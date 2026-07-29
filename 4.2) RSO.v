@@ -26,7 +26,7 @@ module random_delay_gen (
     input  wire        tetiklenme,       // BTNC pulse (tek cycle'lik)
     input  wire [15:0] lfsr_deger,    // lfsr16 modulunden gelen anlik deger
     input  wire        zorluk,    // 0 = kolay, 1 = zor
-    output reg  [29:0] bekleme_sure,   // hesaplanan bekleme suresi (cycle)
+    output reg  [29:0] sure_bekleme,   // hesaplanan bekleme suresi (cycle)
     output reg         sure_bekleme_gecerli 
 );
 
@@ -40,7 +40,7 @@ module random_delay_gen (
     reg [29:0] min_sure;
     reg [29:0] ara;
     reg [45:0] asil_sonuc;   // 16 bit * 30 bit = 46 bit genislik
-    reg        asama1_gecerli, stage2_gecerli;
+    reg        asama1_gecerli, asama2_gecerli;
 
     // Zorluk secimine gore min/span degerlerini belirle (kombinasyonel)
     always @(*) begin
@@ -48,7 +48,7 @@ module random_delay_gen (
             min_sure = KOLAY_MIN;
             ara      = KOLAY_ARA;
         end else begin
-            min_cycles = ZOR_MIN;
+            min_sure = ZOR_MIN;
             ara      = ZOR_ARA;
         end
     end
@@ -58,7 +58,7 @@ module random_delay_gen (
         if (rst) begin
             lfsr_anlik     <= 16'd0;
             asil_sonuc       <= 46'd0;
-            bekleme_sure       <= 30'd0;
+            sure_bekleme       <= 30'd0;
             asama1_gecerli      <= 1'b0;
             asama2_gecerli      <= 1'b0;
             sure_bekleme_gecerli <= 1'b0;
@@ -75,9 +75,9 @@ module random_delay_gen (
             // Stage 1 -> 2: carpma sonucunu olcekle (>>16) ve min_cycles ekle
             if (asama1_gecerli) begin
                 sure_bekleme  <= min_sure + (asil_sonuc >> 16);
-                stage2_valid <= 1'b1;
+                asama2_gecerli <= 1'b1;
             end else begin
-                asama2_sonuc <= 1'b0;
+                asama2_gecerli <= 1'b0;
             end
 
             // Stage 2 -> cikis gecerli
