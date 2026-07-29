@@ -29,12 +29,12 @@ rst (1 bit)
 
 gameOver (1 bit)
     if the game is over, only light the winning player's lights
-winner (2 bits)
-    who won the entire game? only here for the gameOver scenario. has to be compared and figured out elsewhere. If the game is not over yet. Don't care
-    00 = player1
-    01 = player2
-    10 = player3
-    11 = player4
+winners (4 bits)
+    who won the entire game? only here for the gameOver scenario. has to be compared and figured out elsewhere. If the game is not over yet. Don't care.
+    Has to account for ties
+    winner[0] = did player1 win the game
+    winner[1] = did player2 win the game etc..
+    Normally usually one bit is one, but ties are possible
 
 outputs:
 leds (16 bits)
@@ -46,7 +46,7 @@ The previous turn's lights stay lit until the next turn is over.
 */
 
 
-module playerLEDs(input clk, rst, input[1:0] player1Place, player2Place, player3Place, player4Place, input[3:0]playersIn, playersPenalized, input gameOver, input[1:0] winner,
+module playerLEDs(input clk, rst, input[1:0] player1Place, player2Place, player3Place, player4Place, input[3:0]playersIn, playersPenalized, input gameOver, input[3:0] winners,
 output reg[15:0] leds
     );
     
@@ -69,33 +69,21 @@ output reg[15:0] leds
     else begin
     
     if(gameOver) begin //the game is over. Displaying only the winner
-    case(winner) //who is the final winner? This value is irrelevant if the final turn isn't over
+    //who are the final winners? This value is irrelevant if the final turn isn't over
     //We don't need to know if there are less than 4 players here. winner won't be affected by that.
-    4'b00: begin//Player1 won the game
+    if(winners[0]) begin//Player1 won the game
     player1Leds <= 4'b1111;
-    player2Leds <= 4'b0000;
-    player3Leds <= 4'b0000;
-    player4Leds <= 4'b0000;
     end
-    4'b01: begin//Player2 won the game
-    player2Leds <= 4'b1111;
-    player1Leds <= 4'b0000;
-    player3Leds <= 4'b0000;
-    player4Leds <= 4'b0000;    
+    if(winners[1]) begin//Player2 won the game
+    player2Leds <= 4'b1111;   
     end
-    4'b10: begin//Player3 won the game
-    player3Leds <= 4'b1111;
-    player2Leds <= 4'b0000;
-    player1Leds <= 4'b0000;
-    player4Leds <= 4'b0000;    
+    if(winners[2]) begin//Player3 won the game
+    player3Leds <= 4'b1111;   
     end
-    4'b11: begin//Player4 won the game
-    player4Leds <= 4'b1111;
-    player2Leds <= 4'b0000;
-    player3Leds <= 4'b0000;
-    player1Leds <= 4'b0000;    
+    if(winners[3]) begin//Player4 won the game
+    player4Leds <= 4'b1111;   
     end
-    endcase
+    
     end//of the "game is over"
     
     else begin //the game is not over, displaying the 4 placements
