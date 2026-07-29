@@ -43,7 +43,7 @@ The previous turn's lights stay lit until the next turn is over.
 */
 
 
-module playerLEDs(input clk, rst, input[3:0] player1Place, player2Place, player3Place, player4Place, playersIn, input gameOver, input[1:0] winner,
+module playerLEDs(input clk, rst, input[1:0] player1Place, player2Place, player3Place, player4Place, input[3:0] playersIn, input gameOver, input[1:0] winner,
 output reg[15:0] leds
     );
     
