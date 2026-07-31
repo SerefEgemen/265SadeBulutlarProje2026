@@ -144,11 +144,16 @@ end
 			if((score[j][i] = 0) && !(playerOrderSpeed[order] = j)) begin 
 				playerCount[j] <= 1'b0; //nuked
 			end
+
+			falseStart[j] <= 1'b0; //reset 
 		end
 	end
 //^^ elimination modu açıksa order'da olmayan değerlerin switchlerini kapatır ^^ 
 
-	
+for(j = 0; j < playerCount; j + 1) begin
+	falseStart[j] <= 1'b0; //reset, does not affect eliminations because elimination is handled by another matrix
+end
+			
 wait(BTNC == 1); //bir sonraki tura geçirene kadar manuel olarak durdurur, teknik olarak tur burada bitti bir sonrakine geçe emri bekliyor **daha düzgün yaz
 
 
