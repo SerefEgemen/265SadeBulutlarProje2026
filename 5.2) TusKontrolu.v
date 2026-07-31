@@ -10,7 +10,7 @@ module TusKontrolu(
 
 input clk, //basys3 kartındaki 10 nanosaniyelik clock sinyali 100Mhz yani.
 input resetSW15, //basys3 üzerindeki switch15 den gelen reset sinyali.
-input [1:0]playerNO, //ConfigMenu modülünden gelen oyuncu sayısı bilgisi.
+input [3:0]playerNO, //ConfigMenu modülünden gelen oyuncu sayısı bilgisi.
 input BTNC, //Orta tuş, Oyunu başlatmaya yarar. BTNC ve altındaki 4 girdi gürültülü girdilerdir. Kodun ilerleyen kısımlarında debounce modülü ile temizleneceklerdir.
 input BTNU, //1. oyuncu için atanan tuş
 input BTNL, //2. oyuncu için atanan tuş
@@ -68,14 +68,14 @@ always@(posedge clk) begin //Bu modülde daha detaylı açıklamalar sonra yapı
             SinyalBTNL <= 1'b0;
         end
         //BTNR
-        if(eskiBTNR == 1'b0 && TemizlenmisBTNR == 1'b1 && (playerNO == 2'b11 || playerNO == 2'b10)) begin
+        if(eskiBTNR == 1'b0 && TemizlenmisBTNR == 1'b1 && playerNO[2]) begin
             SinyalBTNR <= 1'b1;
         end
         else begin
             SinyalBTNR <= 1'b0;
         end
         //BTND
-        if(eskiBTND == 1'b0 && TemizlenmisBTND == 1'b1 && playerNO == 2'b11) begin
+        if(eskiBTND == 1'b0 && TemizlenmisBTND == 1'b1 && playerNO[3]) begin
             SinyalBTND <= 1'b1;
         end
         else begin
