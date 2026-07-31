@@ -22,12 +22,12 @@ When set, The game configs will begin. And after the configs are done, the game 
 
 Config needs 3 inputs and 8 bits in total.
 
-1. Player Count (2 bits):
-The game can be played by 2, 3, or 4, people. So 2 bits is enough.
-playerCount = 00 => This Shouldn't Happen
-playerCount = 01 => First option: 2 players
-playerCount = 10 => Second option: 3 players
-playerCount = 11 => Third option: 4 Players
+1. Player Count (4 bits):
+Player count then becomes remaining players, so this is updated
+playerCount[0] => is player1 in the game or not
+playerCount[1] => is player2 in the game or not
+playerCount[2] => is player3 in the game or not
+playerCount[3] => is player4 in the game or not
 
 2. Turn Count (4 bits):
 The amount of turns is equal to the (exact bit counter + 1).
@@ -50,7 +50,7 @@ There are 16 switches on the board. (#5 on manual) We can assign these into the 
 From left to right:
 
 Switch 0, 1, and 2 = PlayerCount
-1 = 01 / 2 = 10 / 3 = 11
+1 = 2 players / 2 = 3 players / 3 = 4 players initially
 Make it so only one of these switches can be pressed at the time. Turning on one should turn off the others
 (If no switches are on, make the default value 01)
 
