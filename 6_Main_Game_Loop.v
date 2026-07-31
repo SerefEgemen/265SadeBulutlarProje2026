@@ -109,7 +109,8 @@ for(i = 0; (i < turSayisi) && !rst; i = i + 1) begin //staticte değilken gamelo
 
 	end //while
 
-	for(j = 0; j < ) begin//playerOrder 5 seconds of grace OLACAK work in progress
+	end_time = $time + 5000000000; //5 sec wait
+	while($time < end_time)( begin//playerOrder 5 seconds of grace OLACAK work in progress
       //sırasıyla input açar falsestart olmamalarına göre
 	    if(playerCount[0] && !falseStart[0]) begin//1. oyuncu
 	      if(BTNU) begin
@@ -136,8 +137,8 @@ for(i = 0; (i < turSayisi) && !rst; i = i + 1) begin //staticte değilken gamelo
 	      end 
 	    end
 	  end //if
-
-	end //for
+	#5 //time goes on. there are 5 nanoseconds inbetween presses.
+	end //while
 
 //skor hesabı kısmı
 for(j = 0; j < order; j = j + 1) begin 
@@ -183,7 +184,8 @@ end
 			
 wait(BTNC); //bir sonraki tura geçirene kadar manuel olarak durdurur, teknik olarak tur burada bitti bir sonrakine geçe emri bekliyor **daha düzgün yaz
 
-order <= 0;
+order = 0;
+
 end
 //game is over, so after this is the endgame part
 
