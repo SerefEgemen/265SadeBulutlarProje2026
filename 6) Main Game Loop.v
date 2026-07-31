@@ -10,7 +10,7 @@ player3 : BTNR [T17]
 player4: BTND [U17]
 
 !! playerLED ile bağlanmalı fonksiyonlar birleştirilirken !!
-
+## mantık hataları olabilir test edilmeli boyutlar için
 */
 
 module gameLoop(input clk, rst, reg turnNo, reg playerNo, BTNC, BTNU, BTNL BTNR, BTND, hardModeInput, eliminationModeInput, kararmaSinyali 
@@ -30,9 +30,9 @@ elimination <= eliminationModeInput; //1'b t/f
 reg order <= 0; //sıralama yapılırken kullanıyor playerOrder side piece
   
 timer <= kararmaSinyali;
-  //ışıklar kapandığında falseStart'tan playerOrder'a geçecek. 5 sec timer her türlü sayacak, çıkınca da timeout'a alır.
+  //ışıklar kapandığında falseStart'tan playerOrder'a geçecek. 5 sec timer her türlü sayacak, çıkınca da timeout otomatikman çünkü input kabul etmez
 
-//player var mı aşağıdaki gameloop için true/false vbvb CONFIG
+//player var mı aşağıdaki gameloop için true/false vbvb CONFIG aşaması
 for(i = 0; i < 4; i + 1) begin
 
 	if(i < playerCount)
@@ -52,25 +52,27 @@ end
 
 for(i = 0; (i < turSayisi) && !rst; i + 1, order = 0) begin //staticte değilken gameloop,, bir tık daha düzeltilmeli rough draft diyelim
 //static durumdayken gameloop iptal oluyor sıkıntı yaratabilir belki ve turu bitirdikten sonra imha ediyor tur ortası basılırsa çalışıyor kod ### Not ###
+
 //inputlar bu kısımda açık, her input ile ledler sırasıyla yanmalı playerlarla bağlantılı
 
 		while(!timer) begin //falseStart victims
 			if(playerCount[0]) begin//1. oyuncu
 			      if(BTNU) begin
 							falseStart[0] <= 1'b1;
+					  //playerled vb eklenmeli sıra için. playerled inputu sıra için order, playerNo için if döngüsü içindeki değeri olarak ayarlanmalı
 			      end 
 			    end
-			    if(playerCount[1]) begin//2. oyuncu
+			if(playerCount[1]) begin//2. oyuncu
 			      if(BTNL) begin
 					  falseStart[1] <= 1'b1;
 			      end 
 			    end
-			    if(playerCount[2]) begin
+			if(playerCount[2]) begin
 			      if(BTNR) begin
 					  falseStart[2] <= 1'b1; //3. oyuncu
 			      end 
 			    end
-			if(falseStart[3]) begin//4. oyuncu
+			if(playerCount[3]) begin//4. oyuncu
 			      if(BTND) begin//button press içi aşağısı için
 							falseStart[3] <= 1'b1;
 			      end 
@@ -109,32 +111,26 @@ for(i = 0; (i < turSayisi) && !rst; i + 1, order = 0) begin //staticte değilken
 
 	end //for
 
-/*
-burada input vermeyenler timeout'a alınır belki her oyuncu için true/false yapılabilir basıp basmamaları hakkında ama çook uzun olur düşün bir şeyler
-
-kısacası timer bitti timeout artık herkes
-
-üstteki yazdığımı sallamaya gerek yok inputu sadece yukarıda alabiliyor çünkü checkler yukarıda ondan dolayı manuel ayarlamamızı gerektiren bir şey yok ama kaldın yine de anı ?
-*/
-
 //skor hesabı kısmı
-for(j = 0; j < playerCount; j + 1) begin //hmm playerCount 4 player olunca 3 mü 4 mü alıyordu hata çıkarsa oradan çıkar !!!! son oyuncuyu saymamaya başlarsa basmayan ayırt edilemez olabilir 0 bastığı için dikkat
+for(j = 0; j < order; j + 1) begin 
 
-case(playerOrderSpeed[j])
-  
-case 2'b00:  score[0][i] <= playerCount - j; //i olmasının sebebi tura göre kaydetmesi
-case 2'b01:  score[1][i] <= playerCount - j;
-case 2'b10:  score[2][i] <= playerCount - j;
-case 2'b11:  score[3][i] <= playerCount - j;
-  
-endcase
+	case(playerOrderSpeed[j])
+	  
+		case 2'b00:  score[0][i] <= playerCount - j; //i olmasının sebebi tura göre kaydetmesi
+		case 2'b01:  score[1][i] <= playerCount - j;
+		case 2'b10:  score[2][i] <= playerCount - j;
+		case 2'b11:  score[3][i] <= playerCount - j;
+		default: //boş çünkü olmamalı
+		//case'ler ilerletilebilir max player sayısıma göre kapsaması için
+			
+	endcase
 
 end
 //timeout vb otomatik 0 olur başlangıç config sayesinde
 
-//ScoreCalc() belki display sıralama ? olabilir yapılabilir orderla
+//belki display sıralama ? olabilir yapılabilir 
 
-//elimination açıksa eliminate players here t/f
+//elimination
 	if(elimination) begin
 		order <= order - 1; //açıklama aşağı blokta
 		for(j = 0; j < playerCount; j + 1) begin
@@ -152,17 +148,14 @@ end
 	end
 //^^ elimination modu açıksa order'da olmayan değerlerin switchlerini kapatır ^^ 
 
-
 	
-	
-	
-wait(BTNC == 1); //bir sonraki tura geçirene kadar manuel olarak, teknik olarak tur burada bitti bir sonrakine geçe emri bekliyor **daha düzgün yaz
+wait(BTNC == 1); //bir sonraki tura geçirene kadar manuel olarak durdurur, teknik olarak tur burada bitti bir sonrakine geçe emri bekliyor **daha düzgün yaz
 
 
 end
 //game is over, so after this is the endgame part
 
-//ScoreCalcEndgame() & playerled sıralama display
+//playerled sıralama display vbvbvb
 
 end //module
 
