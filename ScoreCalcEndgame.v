@@ -33,7 +33,7 @@ tieExists (1 bit)
 module ScoreCalcEndgame(input clk, rst, input[3:0] playersIn, input[6:0] player1Total, player2Total, player3Total, player4Total,
                         output reg[3:0] winners, output reg[6:0] winningScore, output reg tieExists
     );
-    reg[64:0] currentHighest = 7'b0;
+    reg[6:0] currentHighest = 7'b0;
     reg[3:0] currentWinners = 4'b0000;
     reg[2:0] tieFinder = 2'b0;
     
