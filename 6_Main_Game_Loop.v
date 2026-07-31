@@ -78,7 +78,7 @@ end
 
 //main gameloop alt config üst - main'de btnc basma ayarlanmalı fonksiyonun çağırılması için çağırılınca başlar oyun otomatik
 
-for(i = 0; (i < turSayisi) && !rst; i + 1, order = 0) begin //staticte değilken gameloop,, bir tık daha düzeltilmeli rough draft diyelim
+for(i = 0; (i < turSayisi) && !rst; i = i + 1) begin //staticte değilken gameloop,, bir tık daha düzeltilmeli rough draft diyelim
 //static durumdayken gameloop iptal oluyor sıkıntı yaratabilir belki ve turu bitirdikten sonra imha ediyor tur ortası basılırsa çalışıyor kod ### Not ###
 
 //inputlar bu kısımda açık, her input ile ledler sırasıyla yanmalı playerlarla bağlantılı
@@ -140,7 +140,7 @@ for(i = 0; (i < turSayisi) && !rst; i + 1, order = 0) begin //staticte değilken
 	end //for
 
 //skor hesabı kısmı
-for(j = 0; j < order; j + 1) begin 
+for(j = 0; j < order; j = j + 1) begin 
 
 	case(playerOrderSpeed[j])
 	  
@@ -161,7 +161,7 @@ end
 //elimination
 	if(elimination) begin
 		order <= order - 1; //açıklama aşağı blokta
-		for(j = 0; j < playerCount; j + 1) begin
+		for(j = 0; j < playerCount; j = j + 1) begin
 			
 			/*
 			oyuncu başı kontrol. skoru 0 olan ve playerOrderSpeed kategorisinde sonuncu olmayan her kişi otomatikman ya timeout ya da falseStart grubuna ait olmak zorunda
@@ -169,7 +169,7 @@ end
 			order for döngüsünün içinde 0'lanacak zaten ondan dolayı burada evirip çevirmemde bir sıkıntı yok
 			*/
 			/*
-			if((score[j][i] = 0) && !(playerOrderSpeed[order] = j)) begin 
+			if((score[j][i] == 0) && !(playerOrderSpeed[order] == j)) begin 
 				playerCount[j] <= 1'b0; //nuked
 			end
 
@@ -177,13 +177,13 @@ end
 	end
 //^^ elimination modu açıksa order'da olmayan değerlerin switchlerini kapatır ^^ 
 
-for(j = 0; j < playerCount; j + 1) begin
+for(j = 0; j < playerCount; j = j + 1) begin
 	falseStart[j] <= 1'b0; //reset, does not affect eliminations because elimination is handled by another matrix
 end
 			
-wait(BTNC == 1); //bir sonraki tura geçirene kadar manuel olarak durdurur, teknik olarak tur burada bitti bir sonrakine geçe emri bekliyor **daha düzgün yaz
+wait(BTNC); //bir sonraki tura geçirene kadar manuel olarak durdurur, teknik olarak tur burada bitti bir sonrakine geçe emri bekliyor **daha düzgün yaz
 
-
+order <= 0;
 end
 //game is over, so after this is the endgame part
 
