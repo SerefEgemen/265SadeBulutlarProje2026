@@ -145,7 +145,7 @@ end
 			order for döngüsünün içinde 0lanacak zaten ondan dolayı burada evirip çevirmemde bir sıkıntı yok
 			*/
 			
-			if((score[j][i] = 0) && (playerOrderSpeed[order] = j)) begin 
+			if((score[j][i] = 0) && !(playerOrderSpeed[order] = j)) begin 
 				playerCount[j] <= 1'b0; //nuked
 			end
 		end
