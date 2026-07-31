@@ -9,12 +9,12 @@ playersIn (4 bits)
 
 player1Total
 player2Total
-player3Total (all 65 bits)
+player3Total (all 7 bits)
 player4Total
     the final scores of all 4 players. These will be compared
 
 outputs:
-winningScore (65 bits)
+winningScore (7 bits)
     the highest of all the scores.
     Since we only look at the players who are currently playing, even if an eliminated player has a higher score, it won't be included.
 
@@ -30,17 +30,17 @@ tieExists (1 bit)
 */
 
 
-module ScoreCalcEndgame(input clk, rst, input[3:0] playersIn, input[64:0] player1Total, player2Total, player3Total, player4Total,
-output reg[3:0] winners, output reg[64:0] winningScore, output reg tieExists
+module ScoreCalcEndgame(input clk, rst, input[3:0] playersIn, input[6:0] player1Total, player2Total, player3Total, player4Total,
+                        output reg[3:0] winners, output reg[6:0] winningScore, output reg tieExists
     );
-    reg[64:0] currentHighest = 65'd0;
+    reg[64:0] currentHighest = 7'b0;
     reg[3:0] currentWinners = 4'b0000;
     reg[2:0] tieFinder = 2'b0;
     
     always@(posedge clk) begin
     if(rst) begin
     winners <= 4'b0;
-    winningScore <= 65'd0;
+    winningScore <= 7'b0;
     tieExists = 1'b0;
     end else begin
     //for each player. Check the player is in the game. If their total is larger than the current highest, highest = that total
