@@ -49,7 +49,7 @@ playersIn (4 bits)
 
 player1Total
 player2Total
-player3Total (all 65 bits)
+player3Total (all 7 bits)
 player4Total
     total amount of ponts the players got since the start. Can't be below 0 or above 64 since max turn amount is 16 and max point from a turn is 4
 
@@ -69,7 +69,7 @@ playersPenalized (4 bits)
     
 player1newTotal
 player2newTotal
-player3newTotal (all 65 bits)
+player3newTotal (all 7 bits)
 player4newTotal 
     updated totals after scoring.
 
@@ -83,8 +83,8 @@ player is penalized = display 0, disregard placement value
 */
 
 
-module ScoreCalc(input clk, rst, eliminate, input[29:0] player1Time, player2Time, player3Time, player4Time, input[3:0] timeoutPlayers, falseStartPlayers, playersIn, input[64:0] player1Total, player2Total, player3Total, player4Total,
-output reg[1:0] player1Place, player2Place, player3Place, player4Place, output reg[3:0] playersLeft, playersPenalized, output reg[64:0] player1newTotal, player2newTotal, player3newTotal, player4newTotal
+module ScoreCalc(input clk, rst, eliminate, input[29:0] player1Time, player2Time, player3Time, player4Time, input[3:0] timeoutPlayers, falseStartPlayers, playersIn, input[6:0] player1Total, player2Total, player3Total, player4Total,
+                 output reg[1:0] player1Place, player2Place, player3Place, player4Place, output reg[3:0] playersLeft, playersPenalized, output reg[6:0] player1newTotal, player2newTotal, player3newTotal, player4newTotal
     );
     
     always@(posedge clk) begin
@@ -94,10 +94,10 @@ output reg[1:0] player1Place, player2Place, player3Place, player4Place, output r
     player3Place <= 2'b00;
     player4Place <= 2'b00;
     playersLeft <= 4'b0000;
-    player1newTotal <= 65'd0;
-    player2newTotal <= 65'd0;
-    player3newTotal <= 65'd0;
-    player4newTotal <= 65'd0;
+    player1newTotal <= 7'b0;
+    player2newTotal <= 7'b0;
+    player3newTotal <= 7'b0;
+    player4newTotal <= 7'b0;
     end
     else begin
     //get the old info first
