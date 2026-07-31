@@ -11,13 +11,41 @@ player4: BTND [U17]
 
 !! playerLED ile bağlanmalı fonksiyonlar birleştirilirken !!
 ## mantık hataları olabilir test edilmeli boyutlar için
+
+
+
+Hello! This needs to be rebuilt entirely!!! Mete
 */
 
-module gameLoop(input clk, rst, reg turnNo, reg playerNo, BTNC, BTNU, BTNL BTNR, BTND, hardModeInput, eliminationModeInput, kararmaSinyali 
+module gameLoop(input clk, rst, turnNo, playerNo, BTNC, BTNU, BTNL, BTNR, BTND, hardModeInput, eliminationModeInput, kararmaSinyali, 
                 
-output reg [3:0] score [playerNo:0][turnNo:0]; //log
+output reg[3:0] score /* [playerNo:0][turnNo:0]; //log*/ 
 
 );
+
+
+
+
+
+
+
+
+endmodule
+
+/*
+reg [3:0] playerActive; //playerların olup olmadığını assignlamak için 1 bit true/false switch input için açar main game'de
+reg [3:0] playerOrderSpeed; //gameloopta sırayı belirler, player no alır Sınırlar İçi Basanlar
+reg [3:0] falseStart; //victims
+reg turSayisi; //d
+reg playerCount; // d
+reg hardMode; //1'b t/f
+reg elimination; //1'b t/f
+//main game loop
+reg order; //sıralama yapılırken kullanıyor playerOrder side piece
+
+
+
+always @(posedge clk) begin
   
 reg [1:0] playerActive [3:0]; //playerların olup olmadığını assignlamak için 1 bit true/false switch input için açar main game'de
 reg [2:0] playerOrderSpeed [3:0]; //gameloopta sırayı belirler, player no alır Sınırlar İçi Basanlar
@@ -140,7 +168,7 @@ end
 			[order - 1] olmasının sebebi yukarıda playerOrder'a veri koyduktan sonra otomatik +1 yaptırmam, eksiltmeden bakarsam normal order'a null ya da out of bounds olacaktır
 			order for döngüsünün içinde 0'lanacak zaten ondan dolayı burada evirip çevirmemde bir sıkıntı yok
 			*/
-			
+			/*
 			if((score[j][i] = 0) && !(playerOrderSpeed[order] = j)) begin 
 				playerCount[j] <= 1'b0; //nuked
 			end
@@ -161,9 +189,11 @@ end
 
 //playerled sıralama display vbvbvb
 
-end //module
+end
 
+endmodule //module
 
+*/
 
 
 
@@ -192,7 +222,7 @@ end //module
 ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠙⠲⢤⣀⣀⠀⢀⣀⣀⠤⠒⠉⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
 
 
-🐺
+🐺:3
 ^^
 https://i.kym-cdn.com/entries/icons/original/000/042/980/bludthinkshesontheteam.jpg
 
