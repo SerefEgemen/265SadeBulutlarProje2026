@@ -138,14 +138,13 @@ end
 			/*
 			oyuncu başı kontrol. skoru 0 olan ve playerOrderSpeed kategorisinde sonuncu olmayan her kişi otomatikman ya timeout ya da falseStart grubuna ait olmak zorunda
 			[order - 1] olmasının sebebi yukarıda playerOrder'a veri koyduktan sonra otomatik +1 yaptırmam, eksiltmeden bakarsam normal order'a null ya da out of bounds olacaktır
-			order for döngüsünün içinde 0lanacak zaten ondan dolayı burada evirip çevirmemde bir sıkıntı yok
+			order for döngüsünün içinde 0'lanacak zaten ondan dolayı burada evirip çevirmemde bir sıkıntı yok
 			*/
 			
 			if((score[j][i] = 0) && !(playerOrderSpeed[order] = j)) begin 
 				playerCount[j] <= 1'b0; //nuked
 			end
 
-			falseStart[j] <= 1'b0; //reset 
 		end
 	end
 //^^ elimination modu açıksa order'da olmayan değerlerin switchlerini kapatır ^^ 
