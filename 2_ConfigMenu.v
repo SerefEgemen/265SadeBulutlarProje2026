@@ -53,8 +53,8 @@ module ConfigMenu(input clk, reset, input[2:0] playerNoInput, input[3:0] turnNoI
     hardMode <= hardInput;
     
     //LED displays
-    leds[0:2] <= playerNoInput;
-    leds[4:7] <= turnNoInput;
+    leds[2:0] <= playerNoInput;
+    leds[7:4] <= turnNoInput;
     leds[9] <= eliminationInput;
     leds[11] <= hardInput;
     
