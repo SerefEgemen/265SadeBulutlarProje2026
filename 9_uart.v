@@ -1,14 +1,13 @@
-module UART_Controller (
-    input wire clk,
-    input wire rst,
-    input wire calcinish,         // Puanlama bitti sinyali
-    input wire gameOver,          // Oyun bitti sinyali (Eleme modu dahil)
-    input wire tieExists,         // Beraberlik durumu
-    input wire [3:0] winners,     // Kazanan oyuncu/oyuncuların maskesi
-    input wire [6:0] winningScore,// Kazanan puanı
-    input wire [29:0] p1Time,     // 1. Oyuncu süresi
-    input wire [29:0] p2Time,     // 2. Oyuncu süresi
-    // p3Time, p4Time eklenebilir...
+module UART_Controller ( input clk, rst, gameOver, scoreCalcDone,
+/*inputs needed for mid-Game displays -MT*/
+input[3:0] currentTurn, playersIn, timeoutPlayers, falseStartPlayers,
+input[6:0] p1Total, p2Total, p3Total, p4Total,
+input[29:0] p1Time, p2Time, p3Time, p4Time,
+input[1:0] p1Place, p2Place, p3Place, p4Place,
+/*inputs needed for endgame display -MT*/
+input[3:0] winners, input[6:0] winnerScore, input tieExists,
+//You know how these inputs work from other modules. -MT
+    
     
     output reg tx_start,
     output reg [7:0] tx_data,
@@ -46,11 +45,29 @@ module UART_Controller (
             tx_start <= 0;
             char_index <= 0;
         end else begin
+        if(!gameOver) begin//mid game terminal output -MT
+        /*
+        The terminal output should be something like this:
+        T: [[currentTurn]]
+        P1: [[p1Time]] / [[p1Place]]
+        P2: [[p2Time]] / [[p2Place]]
+        P3: [[p3Time]] / [[p3Place]]
+        P4: [[p4Time]] / [[p4Place]]
+        TO: [[timeoutPlayers]]
+        FS: [[falseStartPlayers]]
+        TS:
+        1: [[p1Total]]
+        2: [[p2Total]]
+        3: [[p3Total]]
+        4: [[p4Total]]
+        
+        I have no idea how to do this -MT
+        */
             case (state)
                 IDLE: begin
                     tx_start <= 0;
                     char_index <= 0;
-                    if (calcinish) state <= CHECK_END_COND;
+                    if (scoreCalcDone) state <= CHECK_END_COND;
                 end
 
                 CHECK_END_COND: begin
@@ -118,9 +135,22 @@ module UART_Controller (
 
                 DONE: begin
                     // Sistem sıfırlanana veya yeni tur başlayana kadar bekle
-                    if (!calcinish) state <= IDLE;
+                    if (!scoreCalcDone) state <= IDLE;
                 end
             endcase
+            end else begin//endgame terminal output -MT
+            if(tieExists) begin //there is a tie -MT
+            /*The Terminal output should be something like this -MT
+            TIE: [[winners]] / [[winningScore]]
+            -MT
+            */
+            end else begin// there is no tie -MT
+            /*The Terminal output should be something like this -MT
+            WNR: [[winners]] Since there is no tie, this will only have 1 winner anyways
+            -MT
+            */
+            end
+            end
         end
     end
 endmodule
