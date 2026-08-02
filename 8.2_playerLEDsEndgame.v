@@ -44,15 +44,23 @@ module playerLEDsEndgame(input clk, rst, input[3:0] winners, output reg[15:0] le
     //We don't need to know if there are less than 4 players here. winner won't be affected by that.
     if(winners[0]) begin//Player1 won the game
     player1Leds <= 4'b1111;
+    end else begin
+    player1Leds <= 4'b0000;
     end
     if(winners[1]) begin//Player2 won the game
     player2Leds <= 4'b1111;   
+    end else begin
+    player2Leds <= 4'b0000;
     end
     if(winners[2]) begin//Player3 won the game
     player3Leds <= 4'b1111;   
+    end else begin
+    player3Leds <= 4'b0000;
     end
     if(winners[3]) begin//Player4 won the game
     player4Leds <= 4'b1111;
+    end else begin
+    player4Leds <= 4'b0000;
     end
     
     //leds
@@ -67,6 +75,8 @@ module playerLEDsEndgame(input clk, rst, input[3:0] winners, output reg[15:0] le
     
     
 endmodule
+
+
 
 
 
@@ -150,4 +160,3 @@ endmodule
 ⠀⠀⠀⠸⡇⠀⠀⠀⠀
 ⠀⠀⠀⠀⠃⠀⠀⠀⠀
 */
-
