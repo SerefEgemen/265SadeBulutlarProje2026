@@ -119,6 +119,14 @@ assign led = ((confinish)? ledsGame : ledsConfig); //leds call Config or the mes
     player2Total
     player3Total
     player4Total
+    player1Time
+    player2Time
+    player3Time
+    player4Time
+    player1Place
+    player2Place
+    player3Place
+    player4Place
     ***endgame only inputs***
     winners
     winnerScore
