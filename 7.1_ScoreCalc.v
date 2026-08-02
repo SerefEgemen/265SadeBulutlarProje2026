@@ -33,6 +33,11 @@ rst (1 bit)
 eliminate (1 bit)
     if eliminate is active, we must remove the penalized players from the active players
 
+gameOver (1 bit)
+    checks if the game is over or not. SCEndgame does the same thing. When one works the other one doesn't.
+turnOver (1 bit)
+    checks if the current turn is finished so it can calculate the totals.
+
 player1Time
 player2Time
 player3Time (all of them 30 bits)
@@ -63,15 +68,15 @@ player4Place
 
 playersLeft (4 bits)
     new value of playersIn after GETTING RID OF THE WEAK!!!!
-
-playersPenalized (4 bits)
-    players that did something wrong. Have to be different from playersLeft because of Elimination
     
 player1newTotal
 player2newTotal
 player3newTotal (all 7 bits)
 player4newTotal 
     updated totals after scoring.
+
+calcDone (1 bit)
+    finished calculating
 
 
 UART can determine what to display each round from the placements.
@@ -83,8 +88,8 @@ player is penalized = display 0, disregard placement value
 */
 
 
-module ScoreCalc(input clk, rst, eliminate, input[29:0] player1Time, player2Time, player3Time, player4Time, input[3:0] timeoutPlayers, falseStartPlayers, playersIn, input[6:0] player1Total, player2Total, player3Total, player4Total,
-output reg[1:0] player1Place, player2Place, player3Place, player4Place, output reg[3:0] playersLeft, playersPenalized, output reg[6:0] player1newTotal, player2newTotal, player3newTotal, player4newTotal
+module ScoreCalc(input clk, rst, eliminate, gameOver, turnOver, input[29:0] player1Time, player2Time, player3Time, player4Time, input[3:0] timeoutPlayers, falseStartPlayers, playersIn, input[6:0] player1Total, player2Total, player3Total, player4Total,
+output reg[1:0] player1Place, player2Place, player3Place, player4Place, output reg[3:0] playersLeft, playersPenalized, output reg[6:0] player1newTotal, player2newTotal, player3newTotal, player4newTotal, output reg calcDone
     );
     
     always@(posedge clk) begin
@@ -101,6 +106,9 @@ output reg[1:0] player1Place, player2Place, player3Place, player4Place, output r
     player4newTotal <= 7'b0;
     end
     else begin
+    if(!gameOver) begin //only works if it's mid-game
+    if(!calcDone) begin
+    if(!turnOver) begin
     //get the old info first
     playersLeft <= playersIn;
     player1newTotal <= player1Total;
@@ -186,21 +194,7 @@ output reg[1:0] player1Place, player2Place, player3Place, player4Place, output r
     end
     //This way, The playerPlace is increased for each time smaller than the player's time.
     
-    //and after their placement is determined, we can add their score to the total.
-    case(player1Place)
-    2'b00: begin
-    player1newTotal <= (player1Total + 4);
-    end
-    2'b01: begin
-    player1newTotal <= (player1Total + 3);
-    end
-    2'b10: begin
-    player1newTotal <= (player1Total + 2);
-    end
-    2'b11: begin
-    player1newTotal <= (player1Total + 1);
-    end
-    endcase
+    
     end
     end
     
@@ -227,21 +221,6 @@ output reg[1:0] player1Place, player2Place, player3Place, player4Place, output r
     player2Place = (player2Place + 1);
     end
     end
-    
-    case(player2Place)
-    2'b00: begin
-    player2newTotal <= (player2Total + 4);
-    end
-    2'b01: begin
-    player2newTotal <= (player2Total + 3);
-    end
-    2'b10: begin
-    player2newTotal <= (player2Total + 2);
-    end
-    2'b11: begin
-    player2newTotal <= (player2Total + 1);
-    end
-    endcase
     end
     end
     
@@ -265,21 +244,6 @@ output reg[1:0] player1Place, player2Place, player3Place, player4Place, output r
     player3Place = (player3Place + 1);
     end
     end
-    
-    case(player3Place)
-    2'b00: begin
-    player3newTotal <= (player3Total + 4);
-    end
-    2'b01: begin
-    player3newTotal <= (player3Total + 3);
-    end
-    2'b10: begin
-    player3newTotal <= (player3Total + 2);
-    end
-    2'b11: begin
-    player3newTotal <= (player3Total + 1);
-    end
-    endcase
     end
     end
     
@@ -303,7 +267,75 @@ output reg[1:0] player1Place, player2Place, player3Place, player4Place, output r
     player4Place = (player4Place + 1);
     end
     end
+    end
+    end
+    //(I know this is a mess. Just work with me, OK?)
+
+    end
+    end
     
+    end else begin //the turn is over. Time to calculate the totals.
+    //after the turn is over and their placement is determined, we can finally add their score to the total.
+    
+    if(playersIn[0]) begin //player1's total
+    if(!playersPenalized[0]) begin //if the player didn't get a penalty:
+    case(player1Place)
+    2'b00: begin
+    player1newTotal <= (player1Total + 4);
+    end
+    2'b01: begin
+    player1newTotal <= (player1Total + 3);
+    end
+    2'b10: begin
+    player1newTotal <= (player1Total + 2);
+    end
+    2'b11: begin
+    player1newTotal <= (player1Total + 1);
+    end
+    endcase
+    end
+    end
+    
+    if(playersIn[1]) begin //player2's total
+    if(!playersPenalized[1]) begin 
+    case(player2Place)
+    2'b00: begin
+    player2newTotal <= (player2Total + 4);
+    end
+    2'b01: begin
+    player2newTotal <= (player2Total + 3);
+    end
+    2'b10: begin
+    player2newTotal <= (player2Total + 2);
+    end
+    2'b11: begin
+    player2newTotal <= (player2Total + 1);
+    end
+    endcase
+    end
+    end
+    
+    if(playersIn[2]) begin //player3's total
+    if(!playersPenalized[2]) begin 
+    case(player3Place)
+    2'b00: begin
+    player3newTotal <= (player3Total + 4);
+    end
+    2'b01: begin
+    player3newTotal <= (player3Total + 3);
+    end
+    2'b10: begin
+    player3newTotal <= (player3Total + 2);
+    end
+    2'b11: begin
+    player3newTotal <= (player3Total + 1);
+    end
+    endcase
+    end
+    end
+    
+    if(playersIn[3]) begin //player4's total
+    if(!playersPenalized[3]) begin
     case(player4Place)
     2'b00: begin
     player4newTotal <= (player4Total + 4);
@@ -320,11 +352,12 @@ output reg[1:0] player1Place, player2Place, player3Place, player4Place, output r
     endcase
     end
     end
-    //(I know this is a mess. Just work with me, OK?)
-
+    
+    calcDone <= 1'b1;
+    end//turnOver
+    
+    
     end
-    
-    
     end
     
 endmodule
