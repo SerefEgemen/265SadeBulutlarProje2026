@@ -26,6 +26,11 @@ playersPenalized (4 bits)
 clk (1 bit)
 rst (1 bit)
     classic
+    
+gameOver (1 bit) 
+    is the game over. Determines to use this or the Endgame
+calcOver (1 bit)
+    did ScoreCalc did its job? Both this and UART should check for this. 
 
 outputs:
 leds (16 bits)
@@ -39,7 +44,7 @@ The final LED placement uses a different module.
 */
 
 
-module playerLEDs(input clk, rst, input[1:0] player1Place, player2Place, player3Place, player4Place, input[3:0]playersIn, playersPenalized,
+module playerLEDs(input clk, rst, gameOver, calcOver, input[1:0] player1Place, player2Place, player3Place, player4Place, input[3:0]playersIn, playersPenalized,
 output reg[15:0] leds
     );
     
@@ -60,7 +65,8 @@ output reg[15:0] leds
     
     end//of reset
     else begin
-    
+    if(!gameOver) begin
+    if(calcOver) begin
     //player1
     if(playersIn[0]) begin //The player is playing
     if(playersPenalized[0]) begin //the player got penalized but not eliminated. This is specifically here because the elimination mode can be off.
@@ -167,8 +173,12 @@ output reg[15:0] leds
     leds[11:8] <= player3Leds;
     leds[15:12] <= player4Leds;
     
+    end else begin //calc isn't over yet.
+    leds <= 16'd0;
     end
     
+    end//game isn't over
+    end//not reset
     end//of clock
                 
 endmodule
