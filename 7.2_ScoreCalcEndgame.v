@@ -31,37 +31,40 @@ tieExists (1 bit)
 
 
 module ScoreCalcEndgame(input clk, rst, input[3:0] playersIn, input[6:0] player1Total, player2Total, player3Total, player4Total,
-                        output reg[3:0] winners, output reg[6:0] winningScore, output reg tieExists
+output reg[3:0] winners, output reg[6:0] winningScore, output reg tieExists
     );
-    reg[6:0] currentHighest = 7'b0;
+    reg[6:0] currentHighest = 7'd0;
     reg[3:0] currentWinners = 4'b0000;
-    reg[2:0] tieFinder = 2'b0;
+    reg[3:0] tieFinder = 3'b000;
     
     always@(posedge clk) begin
     if(rst) begin
     winners <= 4'b0;
-    winningScore <= 7'b0;
-    tieExists = 1'b0;
+    winningScore <= 6'b0;
+    tieExists <= 1'b0;
+    currentHighest <= 7'd0;
+    currentWinners <= 4'b0000;
+    tieFinder <= 3'b000;
     end else begin
     //for each player. Check the player is in the game. If their total is larger than the current highest, highest = that total
     if(playersIn[0]) begin
     if(currentHighest < player1Total) begin
-    currentHighest <= player1Total;
+    currentHighest = player1Total;
     end
     end
     if(playersIn[1]) begin
     if(currentHighest < player2Total) begin
-    currentHighest <= player2Total;
+    currentHighest = player2Total;
     end
     end
     if(playersIn[2]) begin
     if(currentHighest < player3Total) begin
-    currentHighest <= player3Total;
+    currentHighest = player3Total;
     end
     end
     if(playersIn[3]) begin
     if(currentHighest < player4Total) begin
-    currentHighest <= player4Total;
+    currentHighest = player4Total;
     end
     end
     
@@ -87,11 +90,11 @@ module ScoreCalcEndgame(input clk, rst, input[3:0] playersIn, input[6:0] player1
     end
     end
     
-    tieFinder = (currentWinners[0] + currentWinners[1] + currentWinners[2] + currentWinners[3]); // a clever way to see if a tie exists
+    tieFinder <= (currentWinners[0] + currentWinners[1] + currentWinners[2] + currentWinners[3]); // a clever way to see if a tie exists
     if(tieFinder > 1) begin // if the sum of all bits is larger than one, there are at least 2 winners.
-    tieExists = 1'b1;
+    tieExists <= 1'b1;
     end else begin
-    tieExists = 1'b0;
+    tieExists <= 1'b0;
     end
     
     winners <= currentWinners;
