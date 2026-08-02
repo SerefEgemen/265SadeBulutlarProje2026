@@ -317,7 +317,7 @@ gameLoop                İpek (Unfinished)
 segmentDisplay7         Meriç
 ScoreCalc (& Endgame)   Mete
 playerLEDs (& Endgame)  Mete
-UART_Controller         Egemen (Unfinished)
+UART_Controller         Egemen (Unfinished?)
 UART_TX                 ??? (Unfinished)
 
 Constraints:
@@ -327,30 +327,30 @@ Simulation Sources:
 random_delay_gen_tb     Egemen
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
 
 
 
