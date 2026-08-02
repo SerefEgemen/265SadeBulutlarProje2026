@@ -6,6 +6,9 @@ clk
 rst
 playersIn (4 bits)
     which players are in the game? We only need to concern ourselves with their scores
+    
+gameOver (1 bit)
+    checks if the game is over or not. Look at ScoreCalc for details.
 
 player1Total
 player2Total
@@ -27,15 +30,21 @@ tieExists (1 bit)
     0 = no tie
     1 = there is a tie
 
+calcFinished (1 bit)
+    explains itself
+
 */
 
 
-module ScoreCalcEndgame(input clk, rst, input[3:0] playersIn, input[6:0] player1Total, player2Total, player3Total, player4Total,
-output reg[3:0] winners, output reg[6:0] winningScore, output reg tieExists
+module ScoreCalcEndgame(input clk, rst, gameOver, input[3:0] playersIn, input[6:0] player1Total, player2Total, player3Total, player4Total,
+output reg[3:0] winners, output reg[6:0] winningScore, output reg tieExists, calcFinished
     );
     reg[6:0] currentHighest = 7'd0;
     reg[3:0] currentWinners = 4'b0000;
     reg[3:0] tieFinder = 3'b000;
+    //3 stage pipeline: Find highest score, find which players have that score, find if there's a tie
+    reg calcedHighest;
+    reg calcedWinners;
     
     always@(posedge clk) begin
     if(rst) begin
@@ -45,7 +54,12 @@ output reg[3:0] winners, output reg[6:0] winningScore, output reg tieExists
     currentHighest <= 7'd0;
     currentWinners <= 4'b0000;
     tieFinder <= 3'b000;
+    calcedHighest <= 1'b0;
+    calcedWinners <= 1'b0;
+    calcFinished <= 1'b0;
     end else begin
+    
+    if(gameOver) begin //only work if all turns are over
     //for each player. Check the player is in the game. If their total is larger than the current highest, highest = that total
     if(playersIn[0]) begin
     if(currentHighest < player1Total) begin
@@ -67,7 +81,12 @@ output reg[3:0] winners, output reg[6:0] winningScore, output reg tieExists
     currentHighest = player4Total;
     end
     end
+    calcedHighest <= 1'b1;
+    end else begin
+    calcedHighest <= 1'b0;
+    end
     
+    if(calcedHighest) begin
     //After finding out the high score. We figure out which players have the same score. (This covers ties)
     if(playersIn[0]) begin
     if(currentHighest == player1Total) begin
@@ -88,20 +107,29 @@ output reg[3:0] winners, output reg[6:0] winningScore, output reg tieExists
     if(currentHighest == player4Total) begin
     currentWinners[3] <= 1'b1;
     end
+    calcedWinners <= 1'b1;
+    end
+    end else begin
+    calcedWinners <= 1'b0;
     end
     
+    if(calcedWinners) begin
     tieFinder <= (currentWinners[0] + currentWinners[1] + currentWinners[2] + currentWinners[3]); // a clever way to see if a tie exists
     if(tieFinder > 1) begin // if the sum of all bits is larger than one, there are at least 2 winners.
     tieExists <= 1'b1;
     end else begin
     tieExists <= 1'b0;
     end
-    
     winners <= currentWinners;
     winningScore <= currentHighest;
+    calcFinished <= 1'b1;
+    end else begin
+    calcFinished <= 1'b0;
+    end
     
-    end
-    end
+    
+    end//notRst
+    end//clk
     
     
 endmodule
