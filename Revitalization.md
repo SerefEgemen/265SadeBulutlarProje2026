@@ -16,7 +16,7 @@
 
 ## 📄 1_Main.v
 
-### 🔴 H1 — `center` Wire'ına İki Çıkış Bağlı (Multi-Driver)
+### ~~🔴 H1 — `center` Wire'ına İki Çıkış Bağlı (Multi-Driver)~~ ✅ DÜZELTİLDİ
 
 **Konum:** Satır 22, 26, 37
 
@@ -30,9 +30,11 @@
 - `dbC` örneklemesini kaldırıp, BTNC'yi sadece `TusKontrolu` üzerinden debounce edin. `SinyalBTNC` çıkışını ayrı bir wire'a alıp `ConfigMenu` ve `random_delay_gen`'e bağlayın.
 - Ya da `TusKontrolu`'nun BTNC çıkışını farklı bir wire'a bağlayın (ör. `centerEdge`), `dbC`'nin `center` çıkışını konfigürasyon tarafında kullanın.
 
+> ✅ **DURUM: DÜZELTİLDİ** — `centerForConfigSpecifically` adında ayrı bir wire tanımlandı. `debounce dbC` çıkışı buna bağlandı, `TusKontrolu`'nun `SinyalBTNC` çıkışı `center`'a bağlı kaldı. Multi-driver sorunu çözüldü.
+
 ---
 
-### 🔴 H2 — LED Çıkışı İçin Multiplexer Gerekli
+### ~~🔴 H2 — LED Çıkışı İçin Multiplexer Gerekli~~ ✅ DÜZELTİLDİ
 
 **Konum:** Satır 13, 34
 
@@ -45,11 +47,13 @@ Tur sonu gösterimi     → led = playerLEDs çıkışı
 Oyun bitti             → led = playerLEDsEndgame çıkışı
 ```
 
+> ✅ **DURUM: DÜZELTİLDİ** — `assign led = ((confinish) ? ledsGame : ledsConfig);` ternary multiplexer eklendi. Ancak `ledsGame` wire'ı henüz hiçbir modüle bağlanmamış — E1 ile birlikte tamamlanmalı.
+
 ---
 
 ## 📄 2_ConfigMenu.v
 
-### 🔴 H3 — Bit-Slice Yönü Ters
+### ~~🔴 H3 — Bit-Slice Yönü Ters~~ ✅ DÜZELTİLDİ
 
 **Konum:** Satır 56-57
 
@@ -67,9 +71,11 @@ leds[2:0] <= playerNoInput;   // ✅
 leds[7:4] <= turnNoInput;     // ✅
 ```
 
+> ✅ **DURUM: DÜZELTİLDİ** — `leds[0:2]` → `leds[2:0]`, `leds[4:7]` → `leds[7:4]` olarak düzeltildi.
+
 ---
 
-### 🟡 H4 — Atanmayan LED Bitleri
+### 🟡 H4 — Atanmayan LED Bitleri — ❌ DÜZELTİLMEDİ
 
 **Konum:** Satır 56-59
 
@@ -77,11 +83,13 @@ leds[7:4] <= turnNoInput;     // ✅
 
 **Çözüm (opsiyonel):** Bloğun başında `leds <= 16'b0;` yazıp sonra ilgili bitleri atayabilirsiniz.
 
+> ❌ **DURUM: DÜZELTİLMEDİ** — Bit 3, 8, 10, 12-14 hâlâ atanmıyor. Sarı öncelik — kritik değil ama temizlik açısından yapılması önerilir.
+
 ---
 
 ## 📄 6_Main_Game_Loop.v — ⚠️ EN KRİTİK DOSYA
 
-### 🔴 H5 — Modül Sentezlenemez, Sıfırdan Yazılmalı
+### 🔴 H5 — Modül Sentezlenemez, Sıfırdan Yazılmalı — ❌ DÜZELTİLMEDİ
 
 **Sorun:** Bu modül yazılım mantığıyla (C gibi) yazılmış. Aşağıdaki yapılar donanım sentezi için **yasaktır**:
 
@@ -103,11 +111,13 @@ leds[7:4] <= turnNoInput;     // ✅
 - Dizi boyutları sabit: `reg [X:0] score [0:3][0:15]`
 - Tüm `always @(posedge clk)` içinde sadece non-blocking (`<=`) kullanılmalı
 
+> ❌ **DURUM: DÜZELTİLMEDİ** — Bu modüle hiç dokunulmamış. Tüm sentezlenemez yapılar (`while`, `$time`, `#5`, `wait`, `genvar`, `generate`) hâlâ duruyor. FSM tabanlı yeniden yazım yapılmalıdır. **EN KRİTİK MADDE.**
+
 ---
 
 ## 📄 7.1_ScoreCalc.v
 
-### 🔴 H6 — Player 4 İçin Bit İndeksi Sınır Dışı
+### ~~🔴 H6 — Player 4 İçin Bit İndeksi Sınır Dışı~~ ✅ DÜZELTİLDİ
 
 **Konum:** Satır 153, 155
 
@@ -125,9 +135,11 @@ playersPenalized[3] <= 1'b1;  // ✅
 playersLeft[3] <= 1'b0;       // ✅
 ```
 
+> ✅ **DURUM: DÜZELTİLDİ** — `playersPenalized[4]` → `[3]`, `playersLeft[4]` → `[3]` olarak düzeltildi.
+
 ---
 
-### 🔴 H7 — Sıralama Mantığı Non-Blocking Yüzünden Yanlış Çalışıyor
+### 🔴 H7 — Sıralama Mantığı Non-Blocking Yüzünden Yanlış Çalışıyor — ⚠️ KISMEN DÜZELTİLDİ
 
 **Konum:** Satır 112-184 (ve diğer oyuncu blokları)
 
@@ -157,9 +169,11 @@ if(player1Time > player4Time) p1_place_comb = p1_place_comb + 1;
 player1Place <= p1_place_comb;
 ```
 
+> ⚠️ **DURUM: KISMEN DÜZELTİLDİ** — Sıralama karşılaştırmalarında `<=` yerine `=` (blocking) kullanılmaya başlandı, bu sayede ardışık artırımlar doğru çalışıyor. Ancak önerilen kombinasyonel `always @(*)` bloğuna taşıma yapılmadı — tüm hesaplama hâlâ aynı `always @(posedge clk)` bloğu içinde. Aynı blokta bazı değişkenler `<=`, sıralama `=` ile atanıyor — blocking/non-blocking karışımı devam ediyor. Vivado bunu genellikle kabul eder ama IEEE standardı açısından riskli.
+
 ---
 
-### 🔴 H8 — `player1newTotal` Blocking/Non-Blocking Karışımı
+### ~~🔴 H8 — `player1newTotal` Blocking/Non-Blocking Karışımı~~ ✅ DÜZELTİLDİ
 
 **Konum:** Satır 105 vs. satır 191-201
 
@@ -179,9 +193,11 @@ IEEE standardına göre bu **tanımsız davranıştır**. Player 2, 3, 4 için `
 2'b11: player1newTotal <= (player1Total + 1);
 ```
 
+> ✅ **DURUM: DÜZELTİLDİ** — Satır 191-201'deki tüm `=` atamaları `<=` (non-blocking) olarak düzeltildi. Player 2, 3, 4 de aynı şekilde `<=` kullanıyor.
+
 ---
 
-### 🟡 H9 — `playersPenalized` Reset'te Sıfırlanmıyor
+### ~~🟡 H9 — `playersPenalized` Reset'te Sıfırlanmıyor~~ ✅ DÜZELTİLDİ
 
 **Konum:** Satır 91-101
 
@@ -189,11 +205,13 @@ IEEE standardına göre bu **tanımsız davranıştır**. Player 2, 3, 4 için `
 
 **Çözüm:** Reset bloğuna `playersPenalized <= 4'b0000;` ekleyin.
 
+> ✅ **DURUM: DÜZELTİLDİ** — Reset bloğuna `playersPenalized <= 4'b0000;` eklendi.
+
 ---
 
 ## 📄 7.2_ScoreCalcEndgame.v
 
-### 🔴 H10 — Blocking/Non-Blocking Karışımı + Tek Cycle Hesap Sorunu
+### 🔴 H10 — Blocking/Non-Blocking Karışımı + Tek Cycle Hesap Sorunu — ⚠️ KISMEN DÜZELTİLDİ
 
 **Konum:** Satır 44-98
 
@@ -215,11 +233,13 @@ if(playersIn[3] && player4Total > highest_comb) highest_comb = player4Total;
 // Sonra highest_comb ile karşılaştırarak currentWinners belirle
 ```
 
+> ⚠️ **DURUM: KISMEN DÜZELTİLDİ** — `currentHighest` artık blocking (`=`) ile atanıyor, bu sayede aynı cycle'da doğru en yüksek skor hesaplanıyor. Ancak: (1) `currentWinners` hâlâ non-blocking (`<=`) — aynı blokta blocking/non-blocking karışımı devam ediyor. (2) `tieFinder` non-blocking ile atanıp hemen ardından okunuyor — eski cycle değerini kullanır. (3) `currentWinners` hiçbir zaman sıfırlanmıyor (reset hariç). Önerilen tam kombinasyonel çözüm uygulanmamış.
+
 ---
 
 ## 📄 8.1_playerLEDs.v
 
-### 🔴 H11 — Copy-Paste Hatası: Yanlış Register Adı
+### ~~🔴 H11 — Copy-Paste Hatası: Yanlış Register Adı~~ ✅ DÜZELTİLDİ
 
 **Konum:** Satır 117, 142
 
@@ -243,11 +263,13 @@ player3Leds <= 4'b0000;    // ✅
 player4Leds <= 4'b0000;    // ✅
 ```
 
+> ✅ **DURUM: DÜZELTİLDİ** — Player 3 ceza bloğunda `player2Leds` → `player3Leds`, Player 4 ceza bloğunda `player2Leds` → `player4Leds` olarak düzeltildi.
+
 ---
 
 ## 📄 8.2_playerLEDsEndgame.v
 
-### 🟡 H12 — Kaybeden Oyuncuların LED'leri Sıfırlanmıyor
+### ~~🟡 H12 — Kaybeden Oyuncuların LED'leri Sıfırlanmıyor~~ ✅ DÜZELTİLDİ
 
 **Konum:** Satır 45-56
 
@@ -258,6 +280,8 @@ player4Leds <= 4'b0000;    // ✅
 if(winners[0]) player1Leds <= 4'b1111;
 else           player1Leds <= 4'b0000;
 ```
+
+> ✅ **DURUM: DÜZELTİLDİ** — Tüm 4 oyuncu için `else` blokları eklendi. Kazanmayanların LED'leri artık açıkça sıfırlanıyor.
 
 ---
 
@@ -337,11 +361,11 @@ Her tur sonunda aktif oyuncu sayısı kontrol edilmeli. Tek kaldıysa → doğru
 
 # BÖLÜM C — Özet
 
-| Kategori | 🔴 Kritik | 🟡 Dikkat | Toplam |
-|----------|-----------|-----------|--------|
-| **A) Mevcut kodlardaki hatalar** | 8 | 4 | 12 |
-| **B) Eksik modüller/özellikler** | 6 | 1 | 7 |
-| **Toplam** | **14** | **5** | **19** |
+| Kategori | 🔴 Kritik | 🟡 Dikkat | Toplam | ✅ Düzeltildi | ⚠️ Kısmen | ❌ Kalan |
+|----------|-----------|-----------|--------|--------------|-----------|--------|
+| **A) Mevcut kodlardaki hatalar** | 8 | 4 | 12 | 8 | 2 | 2 |
+| **B) Eksik modüller/özellikler** | 6 | 1 | 7 | 0 | 0 | 7 |
+| **Toplam** | **14** | **5** | **19** | **8** | **2** | **9** |
 
 ---
 
