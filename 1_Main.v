@@ -20,18 +20,20 @@ wire down;
 wire left;
 wire right;
 wire center;
+wire centerForConfigSpecifically;
 
 
 //Debouncing BTNC specifically for ConfigMenu. The rest is debounced with TusKontrolu
-debounce dbC(btnC, clk, rst, center);
+debounce dbC(btnC, clk, rst, centerForConfigSpecifically);
 
 //Config Menu
 wire hardMode;
 wire elimination;
 wire[3:0] playersIn;
 wire[3:0] turnNo;
+wire[15:0] ledsConfig;
 wire confinish; //config is over
-ConfigMenu configM(clk, rst, sw[2:0], sw[7:4], sw[9], sw[11], center, playersIn, turnNo, elimination, hardMode, confinish, led);
+ConfigMenu configM(clk, rst, sw[2:0], sw[7:4], sw[9], sw[11], centerForConfigSpecifically, playersIn, turnNo, elimination, hardMode, confinish, ledsConfig);
 
 //Debouncing other buttons
 TusKontrolu buttons(clk, rst, playersIn, btnC, btnU, btnL, btnR, btnD, center, up, left, right, down);
@@ -50,6 +52,7 @@ random_delay_gen RNGesus(clk, rst, center, randVal, hardMode, waitTime, waitTime
 
 
 //The Game Loop
+wire ledsGame;
 
 //main game loop goes here...
 /*mainGame does:
@@ -68,6 +71,8 @@ random_delay_gen RNGesus(clk, rst, center, randVal, hardMode, waitTime, waitTime
 //uhhhh...
 
 assign dp = 1'b1; //turn off the decimal point
+
+assign led = ((confinish) ? ledsGame : ledsConfig);
 
 endmodule
 
