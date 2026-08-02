@@ -12,6 +12,11 @@ winners (4 bits)
     winner[1] = did player2 win the game etc..
     Normally usually one bit is one, but ties are possible
 
+gameOver (1 bit) 
+    is the game over. Use this if it is
+calcOver (1 bit)
+    did ScoreCalcEndgame did its job? Both this and UART should check for this.
+
 outputs:
 leds (16 bits)
     the led displays.
@@ -20,7 +25,7 @@ leds (16 bits)
 */
 
 
-module playerLEDsEndgame(input clk, rst, input[3:0] winners, output reg[15:0] leds
+module playerLEDsEndgame(input clk, rst, gameOver, calcOver, input[3:0] winners, output reg[15:0] leds
     );
     
     reg[3:0] player1Leds;
@@ -32,13 +37,16 @@ module playerLEDsEndgame(input clk, rst, input[3:0] winners, output reg[15:0] le
     always@ (posedge clk) begin
     
     if(rst) begin
-    player1Leds <= 4'b0;
-    player2Leds <= 4'b0;
-    player3Leds <= 4'b0;
-    player4Leds <= 4'b0;
+    player1Leds <= 4'd0;
+    player2Leds <= 4'd0;
+    player3Leds <= 4'd0;
+    player4Leds <= 4'd0;
     leds <= 16'b1000_0000_0000_0000; //only the reset light is on
     end//of reset
     else begin
+    
+    if(gameOver) begin
+    if(calcOver) begin
     //the game is over. Displaying only the winner
     //who are the final winners? This value is irrelevant if the final turn isn't over
     //We don't need to know if there are less than 4 players here. winner won't be affected by that.
@@ -69,9 +77,13 @@ module playerLEDsEndgame(input clk, rst, input[3:0] winners, output reg[15:0] le
     leds[11:8] <= player3Leds;
     leds[15:12] <= player4Leds;
     
+    end else begin//Calc isn't over
+    leds <= 16'd0;
+    end
     
-    end
-    end
+    end//gameOver
+    end//not reset
+    end//clock
     
     
 endmodule
