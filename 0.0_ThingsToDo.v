@@ -283,7 +283,8 @@ As a summary, our tasks are:
 Stuff we need to do after a week has passed:
 
 Remaining modules needed:
-UART
+UART_Controller (need to display all the correct info)
+UART_TX
 gameLoop (need to fix)
 
 (and TestBenches?)
@@ -316,13 +317,27 @@ gameLoop                İpek (Unfinished)
 segmentDisplay7         Meriç
 ScoreCalc (& Endgame)   Mete
 playerLEDs (& Endgame)  Mete
-UART                    Egemen (Unfinished)
+UART_Controller         Egemen (Unfinished)
+UART_TX                 ??? (Unfinished)
 
 Constraints:
-basys3Assigning         Digilent (Mete copied it from their official Github Account)
+basys3Assigning         Digilent (Mete copied it from their official Github Account, They hope this is allowed since it's not a module)
 
 Simulation Sources:
 random_delay_gen_tb     Egemen
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -380,3 +395,88 @@ I think that's all. So here's an ASCII art of Sans Undertale:
 
 module ThingsToDo();
 endmodule
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*
+PS:⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀ 
+if anyone used AI generated code for a module and committed academic misconduct, please do not punish the entire group. I warned everyone several times about not using it. 
+So, here I am, hiding my comment under this useless module, hoping other people will be distracted by the ASCII art or just won't check this module.
+You can determine who coded what by looking at this module.
+And if anyone from group sees this, I am so sorry! I'm just scared. And I have told you to not copy-paste AI code!
+I will delete this comment when all code I suspect is AI is gone.
+-Mete Sipahi
+*/
