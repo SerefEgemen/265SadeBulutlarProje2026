@@ -12,6 +12,7 @@ finishedInput: determines if the configs are done or not. Assigned to btnC. (1 b
 outputs:
 playerNo: playerNo[0] = player1 is in the game etc. (4 bits)
 turnNo: 0000 = 1 turn, ..., 1111 = 16 turns. (4 bits)
+currentTurn: Begin the game by setting the current turn to 0. (4 bits)
 elimination: 0 = Elimination Mode off, 1 = on. (1 bit)
 hardMode: 0 = Easy, 1 = Hard. (1 bit)
 finished: 0 = still on config mode, 1 = config mode finished. (1 bit)
@@ -20,7 +21,7 @@ leds: outputs for the LED lights. Lights for the assigned switches turn on when 
 
 
 module ConfigMenu(input clk, reset, input[2:0] playerNoInput, input[3:0] turnNoInput, input eliminationInput, hardInput, finishedInput, 
-    output reg[3:0] playerNo, output reg[3:0] turnNo, output reg elimination, hardMode, finished, output reg[15:0] leds
+    output reg[3:0] playerNo, output reg[3:0] turnNo, currentTurn, output reg elimination, hardMode, finished, output reg[15:0] leds
     );
     
     always@ (posedge clk) begin
@@ -28,6 +29,7 @@ module ConfigMenu(input clk, reset, input[2:0] playerNoInput, input[3:0] turnNoI
     if(reset) begin // default values
     playerNo <= 4'b0011; //2 players
     turnNo <= 4'b0000; //1 turn
+    currentTurn <= 4'b0000;
     elimination <= 1'b0;
     hardMode <= 1'b0;
     finished <= 1'b0;
@@ -47,6 +49,7 @@ module ConfigMenu(input clk, reset, input[2:0] playerNoInput, input[3:0] turnNoI
     //Number of turns: (Switches 4, 5, 6, 7)
     //turns the switch into the 4 bit value. 0000 = 1 turn
     turnNo <= turnNoInput;
+    currentTurn <= 4'b0000;
     
     //elimination and hard mode: (Switches 9, 11)
     elimination <= eliminationInput;
@@ -61,7 +64,9 @@ module ConfigMenu(input clk, reset, input[2:0] playerNoInput, input[3:0] turnNoI
     
     
     //is BTNC pressed to finish config
-    finished <= finishedInput;
+    if(finishedInput) begin
+    finished <= 1'b1;
+    end
     
     end//end of "not finished"
     end//end of clock
