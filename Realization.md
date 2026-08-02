@@ -49,15 +49,17 @@ Top-level modül `Main` (1_Main.v) aşağıdaki alt modülleri örneklemektedir:
 | `RsTx` | `RsTx` | ⚠️ Port var, mantık yok |
 | — | `RsRx` | ❌ Top modülde tanımsız |
 
-### 1.4 LED Çıkışı Çakışması
+### ~~1.4 LED Çıkışı Çakışması~~ ✅ DÜZELTİLDİ
 
 `ConfigMenu` modülü `led[15:0]` çıkışı üretmekte ve top modülde doğrudan `led` portuna bağlanmaktadır. Ancak `playerLEDs` ve `playerLEDsEndgame` modülleri de `leds[15:0]` çıkışı üretmek üzere tasarlanmıştır. Şu anki bağlantıda LED çıkışı tamamen `ConfigMenu`'ye ait. Oyun sırasında LED'lerin oyuncu sıralamasına göre yanması için bir multiplexer/FSM ile kaynak seçimi yapılması gerekmektedir.
+
+> ✅ **DURUM: DÜZELTİLDİ** — Ternary multiplexer eklendi: `assign led = ((confinish) ? ledsGame : ledsConfig);`. Ancak `ledsGame` henüz bağlanmamış — E1 ile tamamlanmalı.
 
 ### 1.5 7-Segment Display Çıkışı
 
 `seg` ve `an` portları top modülde wire olarak tanımlıdır ancak hiçbir modüle bağlanmamıştır. `segmentDisplay7` modülü bu çıkışları üretir ama top modülde örneklenmemiştir. Bu nedenle display çalışmayacaktır.
 
-### 1.6 `center` Wire'ında Çoklu Sürücü (Multi-Driver) Hatası — KRİTİK
+### ~~1.6 `center` Wire'ında Çoklu Sürücü (Multi-Driver) Hatası — KRİTİK~~ ✅ DÜZELTİLDİ
 
 Top modülde:
 - `debounce dbC(btnC, clk, rst, center)` → `center` wire'ını süren 1. kaynak (debounce çıkışı `TemizSinyal`, `output reg`).
@@ -66,6 +68,8 @@ Top modülde:
 - Bu hata, `ConfigMenu`'ye ve `random_delay_gen`'e verilen `center` sinyalini tamamen bozan kritik bir sorundur.
 
 > **NOT (Öz-düzeltme):** Bu sorun ilk raporda "çift debounce" olarak hafif nitelendirilmişti. Tekrar incelendiğinde bunun bir **multi-driver hatası** olduğu tespit edilmiştir.
+
+> ✅ **DURUM: DÜZELTİLDİ** — `centerForConfigSpecifically` wire'ı tanımlanarak `debounce dbC` çıkışı buna, `TusKontrolu` çıkışı `center`'a bağlandı.
 
 ---
 
@@ -96,8 +100,8 @@ Top modülde:
 - Switch eşleştirmeleri (sw[0-2]: oyuncu sayısı, sw[4-7]: tur, sw[9]: eleme, sw[11]: zorluk) açıkça belirtilmiş.
 
 **Hatalar:**
-1. **Bit-slice yönü hatası (KRİTİK):** Satır 56-57'de `leds[0:2]` ve `leds[4:7]` yazılmış. Verilog'da `leds` `reg[15:0]` olarak tanımlandığından (MSB:LSB = 15:0), part-select `leds[2:0]` ve `leds[7:4]` olmalıdır. Ters yöndeki part-select (`[0:2]`) Verilog standardına göre sentez hatasına veya yanlış davranışa neden olur.
-2. **Kullanılmayan LED bitleri:** Satır 56-59'da yalnızca belirli LED'ler atanıyor. Geri kalan bitler (3, 8, 10, 12-15) `always` bloğu içinde atanmadığından önceki değerlerini korur. Reset bloğunda `leds <= 16'b1000...` ile 15. bit set ediliyor ama sonraki bloklarda 15. bit yeniden atanmıyor, bu nedenle reset LED'i (sw[15]) konfigürasyon sırasında sürekli yanık kalabilir veya belirsiz davranabilir.
+1. ~~**Bit-slice yönü hatası (KRİTİK):** Satır 56-57'de `leds[0:2]` ve `leds[4:7]` yazılmış. Verilog'da `leds` `reg[15:0]` olarak tanımlandığından (MSB:LSB = 15:0), part-select `leds[2:0]` ve `leds[7:4]` olmalıdır. Ters yöndeki part-select (`[0:2]`) Verilog standardına göre sentez hatasına veya yanlış davranışa neden olur.~~ ✅ **DÜZELTİLDİ** — `leds[2:0]` ve `leds[7:4]` olarak düzeltildi.
+2. **Kullanılmayan LED bitleri:** Satır 56-59'da yalnızca belirli LED'ler atanıyor. Geri kalan bitler (3, 8, 10, 12-15) `always` bloğu içinde atanmadığından önceki değerlerini korur. Reset bloğunda `leds <= 16'b1000...` ile 15. bit set ediliyor ama sonraki bloklarda 15. bit yeniden atanmıyor, bu nedenle reset LED'i (sw[15]) konfigürasyon sırasında sürekli yanık kalabilir veya belirsiz davranabilir. ❌ **DÜZELTİLMEDİ**
 3. **`finished` sinyali ve BTNC'nin kenar algılaması:** `finished <= finishedInput` kullanılmış. `finishedInput` burada `center` yani debounce edilmiş BTNC sinyali. Ancak `center` bir seviye (level) sinyali ise, buton basılı tutulduğu sürece `finished` sürekli 1 kalacaktır. Top modülden gelen `center` sinyali `debounce` modülünün çıkışıdır ve bu modül seviye sinyali çıkarmaktadır (tek seferlik pulse değil). Potansiyel bir sorun: butona basıp bırakınca `finished` tekrar 0'a düşebilir mi? — Hayır, çünkü `else if(!finished)` bloğu sadece `finished==0` iken çalışır. `finished=1` olduktan sonra blok yeniden yürütülmez. Bu kısım güvenli görünüyor.
 4. **Senkron reset:** Reset, `posedge clk` içinde `if(reset)` ile yapılmış; senkron. Şartnameyle bir çelişki yok, ancak projede tutarlılık açısından tüm modüllerin aynı reset türünü kullanması önemli. Bu modül senkron, diğer modüllerden bazıları da senkron — tutarlılık sağlanmış.
 
@@ -200,11 +204,11 @@ Top modülde:
 - Şartnamenin puanlama kurallarıyla (1.=4p, 2.=3p, 3.=2p, 4.=1p, cezalı=0p) uyumlu.
 
 **Hatalar:**
-1. **Bit indeks hatası (KRİTİK):** Satır 153'te `playersPenalized[4] <= 1'b1` ve satır 155'te `playersLeft[4] <= 1'b0`. `playersPenalized` ve `playersLeft` 4 bitlik `[3:0]` register'lar olduğundan indeks 4 **sınır dışıdır**. Doğrusu `[3]` olmalıdır. Bu bir copy-paste hatasıdır (Player4 bloğunda Player3'ün indeksinin artırılması unutulmuş).
-2. **Non-blocking sonrası okuma sorunu (KRİTİK):** `player1Place` satır 112'de `2'b00` olarak atanıyor (non-blocking). Ardından satır 169-184'te karşılaştırmalar yapılıp `player1Place <= player1Place + 1` ile artırılıyor. Ancak non-blocking atama semantiğinde, aynı clock cycle'da `player1Place`'in okunan değeri bloğun başındaki eski değerdir, yeni atanan `2'b00` değil. Ayrıca birden fazla `player1Place <= player1Place + 1` ataması yapıldığında, hepsi aynı eski değere +1 ekler; yani birden fazla rakibi geçen oyuncu yalnızca 1 sıra düşer, hepsi değil. Bu, sıralama mantığını bozar.
-3. **Blocking/Non-blocking karışımı:** Satır 191-201'de `player1newTotal = (player1Total + 4)` **blocking** atama kullanılmış. Aynı `always @(posedge clk)` bloğu içindeki diğer atamalar non-blocking. Bu tutarsızlık tanımsız davranışa neden olabilir.
-4. **`playersPenalized` reset eksikliği:** `playersPenalized` `always` bloğunda reset durumunda sıfırlanmıyor. Her yeni tur başında önceki tur değerinin temizlenmesi gerekir.
-5. **Sürekli çalışma sorunu:** Modül `always@(posedge clk)` ile her clock'ta çalışır. Oyun turları arasında tetiklenmeden de çalışacaktır. Bir `start`/`enable` sinyali veya FSM durumu ile kontrol edilmesi gerekir.
+1. ~~**Bit indeks hatası (KRİTİK):** Satır 153'te `playersPenalized[4] <= 1'b1` ve satır 155'te `playersLeft[4] <= 1'b0`. `playersPenalized` ve `playersLeft` 4 bitlik `[3:0]` register'lar olduğundan indeks 4 **sınır dışıdır**. Doğrusu `[3]` olmalıdır.~~ ✅ **DÜZELTİLDİ** — `[4]` → `[3]` olarak düzeltildi.
+2. ~~**Non-blocking sonrası okuma sorunu (KRİTİK):** `player1Place` satır 112'de `2'b00` olarak atanıyor (non-blocking). Ardından satır 169-184'te karşılaştırmalar yapılıp `player1Place <= player1Place + 1` ile artırılıyor.~~ ⚠️ **KISMEN DÜZELTİLDİ** — Sıralama atamalari blocking (`=`) olarak değiştirildi, ardışık artırımlar doğru çalışıyor. Ancak aynı `always @(posedge clk)` bloğunda blocking/non-blocking karışımı devam ediyor.
+3. ~~**Blocking/Non-blocking karışımı:** Satır 191-201'de `player1newTotal = (player1Total + 4)` **blocking** atama kullanılmış. Aynı `always @(posedge clk)` bloğu içindeki diğer atamalar non-blocking. Bu tutarsızlık tanımsız davranışa neden olabilir.~~ ✅ **DÜZELTİLDİ** — Tüm `player1newTotal` atamaları `<=` (non-blocking) olarak düzeltildi.
+4. ~~**`playersPenalized` reset eksikliği:** `playersPenalized` `always` bloğunda reset durumunda sıfırlanmıyor.~~ ✅ **DÜZELTİLDİ** — Reset bloğuna `playersPenalized <= 4'b0000;` eklendi.
+5. **Sürekli çalışma sorunu:** Modül `always@(posedge clk)` ile her clock'ta çalışır. Oyun turları arasında tetiklenmeden de çalışacaktır. Bir `start`/`enable` sinyali veya FSM durumu ile kontrol edilmesi gerekir. ❌ **DÜZELTİLMEDİ**
 
 ---
 
@@ -215,10 +219,10 @@ Top modülde:
 - Şartnameyle uyumlu.
 
 **Hatalar:**
-1. **`tieFinder` boyut hatası:** Satır 38'de `reg[2:0] tieFinder = 2'b0;` tanımlı. Boyut 3 bit (doğru — 4 oyuncu toplamı max 4 olabilir, 3 bit yeterli), ancak başlangıç değeri `2'b0` olarak verilmiş. Bu bir uyarı verebilir ama fonksiyonel hata yaratmaz.
-2. **Blocking/Non-blocking karışımı (KRİTİK):** Satır 44'te `tieExists = 1'b0` (blocking), satır 92-94'te yine `tieExists = 1'b0` ve `tieExists = 1'b1` (blocking). Aynı `always @(posedge clk)` bloğunda `tieExists` blocking ile atanırken, diğer tüm registerlar (`winners`, `winningScore`, `currentHighest`, `currentWinners`) non-blocking `<=` ile atanıyor. Blocking ve non-blocking karışımı `always @(posedge clk)` içinde tanımsız davranışa neden olabilir.
-3. **Aynı sorun — tek cycle'da tam hesap:** `currentHighest` non-blocking ile atanıyor (satır 49, 54, 59, 64), ardından aynı cycle'da `currentHighest == playerXTotal` ile karşılaştırılıyor (satır 70, 75, 80, 85). Non-blocking semantiğinde `currentHighest`'ın değeri o cycle'ın başındaki eski değerdir. İlk çalıştırmada `currentHighest = 0` olacağından, hiçbir oyuncunun toplam puanı 0'a eşit değilse `currentWinners` hiçbir zaman set edilmez. İkinci cycle'da `currentHighest` güncellenir ama yalnızca birinci bulunan yüksek skora eşit olur. Bu modül tek cycle'da doğru sonuç veremez; birden fazla cycle gerekir ve bu durum ele alınmamıştır.
-4. **`currentWinners` ve `currentHighest` reset eksikliği:** Her yeni çağrıda bu registerlar sıfırlanmıyor. Önceki turdan kalan değerler yanlış sonuç verebilir.
+1. **`tieFinder` boyut hatası:** Satır 38'de `reg[2:0] tieFinder = 2'b0;` tanımlı. Boyut 3 bit (doğru — 4 oyuncu toplamı max 4 olabilir, 3 bit yeterli), ancak başlangıç değeri `2'b0` olarak verilmiş. Bu bir uyarı verebilir ama fonksiyonel hata yaratmaz. ❌ **DÜZELTİLMEDİ**
+2. ~~**Blocking/Non-blocking karışımı (KRİTİK):**~~ ⚠️ **KISMEN DÜZELTİLDİ** — `currentHighest` artık blocking (`=`) ile atanıyor, bu sayede aynı cycle'da doğru hesaplanabiliyor. Ancak `currentWinners` hâlâ non-blocking, `tieFinder` non-blocking atanmış olup hemen ardından okunuyor. Blocking/non-blocking karışımı devam ediyor.
+3. ~~**Aynı sorun — tek cycle'da tam hesap:**~~ ⚠️ **KISMEN DÜZELTİLDİ** — `currentHighest` blocking olduğu için en yüksek skor aynı cycle'da doğru hesaplanabiliyor. Ancak `currentWinners` non-blocking ile atandığı için kazanan belirleme hâlâ bir cycle gecikir.
+4. **`currentWinners` ve `currentHighest` reset eksikliği:** Her yeni çağrıda bu registerlar sıfırlanmıyor. Önceki turdan kalan değerler yanlış sonuç verebilir. ❌ **DÜZELTİLMEDİ**
 
 ---
 
@@ -229,10 +233,7 @@ Top modülde:
 - LED eşleştirmesi (Oyuncu 1: LED0-3, Oyuncu 2: LED4-7, Oyuncu 3: LED8-11, Oyuncu 4: LED12-15) şartnameyle uyuşuyor.
 
 **Hatalar:**
-1. **Copy-paste hatası (KRİTİK):** 
-   - Satır 117: Player 3'ün cezalandırılma durumunda `player2Leds <= 4'b0000` yazılmış. Doğrusu `player3Leds` olmalı.
-   - Satır 142: Player 4'ün cezalandırılma durumunda yine `player2Leds <= 4'b0000` yazılmış. Doğrusu `player4Leds` olmalı.
-   - Bu hatalar, Player 3 veya Player 4 cezalandırıldığında Player 2'nin LED'lerinin sönmesine neden olur.
+1. ~~**Copy-paste hatası (KRİTİK):** Satır 117: Player 3'ün cezalandırılma durumunda `player2Leds` yazılmış. Satır 142: Player 4 için aynı hata.~~ ✅ **DÜZELTİLDİ** — `player2Leds` → `player3Leds` (satır 117) ve `player2Leds` → `player4Leds` (satır 142) olarak düzeltildi.
 2. **Tek clock cycle gecikmesi:** `playerXLeds` register'ları bir cycle'da hesaplanıp bir sonraki cycle'da `leds`'e atanıyor. Bu 1 cycle'lık gecikme pratikte görünmez ancak tasarım olarak bilinmeli.
 
 ---
@@ -243,8 +244,8 @@ Top modülde:
 - İngilizce açıklamalar yeterli.
 
 **Hatalar:**
-1. **Kaybeden oyuncuların LED'leri sıfırlanmıyor:** `winners[x]` 0 olan oyuncuların LED'leri `else` bloğunda sıfırlanmıyor. Sadece kazananların LED'leri set ediliyor. Kaybedenlerin LED'leri eski değerlerini koruyacak. Reset'ten sonra 0 olacaklardır ama oyun sırasında `playerLEDs` modülü farklı değerler atamışsa ve daha sonra bu modüle geçiş yapılırsa, eski değerler kalabilir.
-2. **`else` bloğu eklenmeli:** Her `if(winners[x])` bloğuna bir `else playerXLeds <= 4'b0000;` eklenmeli.
+1. ~~**Kaybeden oyuncuların LED'leri sıfırlanmıyor:** `winners[x]` 0 olan oyuncuların LED'leri `else` bloğunda sıfırlanmıyor.~~ ✅ **DÜZELTİLDİ** — Tüm 4 oyuncu için `else` blokları eklendi.
+2. ~~**`else` bloğu eklenmeli:** Her `if(winners[x])` bloğuna bir `else playerXLeds <= 4'b0000;` eklenmeli.~~ ✅ **DÜZELTİLDİ**
 
 ---
 
@@ -275,30 +276,30 @@ Top modülde:
 
 ### 🔴 Kritik (Projenin çalışması için zorunlu)
 
-| # | Madde | İlgili Dosya(lar) |
-|---|-------|-------------------|
-| 1 | `gameLoop` modülü tamamen yeniden tasarlanmalı. `while`, `wait`, `$time`, `#delay`, `generate` yanlış kullanımları kaldırılmalı ve FSM tabanlı bir yapıya geçilmeli. | 6_Main_Game_Loop.v |
-| 2 | Top modülde `segmentDisplay7`, `ScoreCalc`, `ScoreCalcEndgame`, `playerLEDs`, `playerLEDsEndgame` modülleri örneklenmeli ve bağlanmalı. | 1_Main.v |
-| 3 | UART 9600 8N1 modülü yazılmalı ve top modüle entegre edilmeli. | Yeni dosya + 1_Main.v |
-| 4 | Oyun durumlarını yöneten ana FSM (konfigürasyon → oyun → tur sonu → endgame) tasarlanmalı. | Yeni dosya veya 1_Main.v |
-| 5 | `ConfigMenu`'deki bit-slice yönü düzeltilmeli: `leds[0:2]` → `leds[2:0]`, `leds[4:7]` → `leds[7:4]`. | 2_ConfigMenu.v |
-| 6 | `ScoreCalc`'taki Player 4 indeks hataları düzeltilmeli: `playersPenalized[4]` → `[3]`, `playersLeft[4]` → `[3]`. | 7.1_ScoreCalc.v |
-| 7 | `playerLEDs`'deki copy-paste hataları düzeltilmeli: Player 3 ve Player 4 ceza bloklarında `player2Leds` yerine `player3Leds` / `player4Leds` yazılmalı. | 8.1_playerLEDs.v |
-| 8 | `ScoreCalc`'taki non-blocking atama sonrası okuma sorunu çözülmeli. Sıralama mantığı combinational veya çok aşamalı olarak yeniden tasarlanmalı. | 7.1_ScoreCalc.v |
-| 9 | LED çıkışı için multiplexer/kontrol mantığı eklenmeli (ConfigMenu LED ↔ playerLEDs ↔ playerLEDsEndgame). | 1_Main.v |
-| 10 | XDC'deki `RsRx` pini ya top modüle eklenmeli ya da XDC'de yorum satırına alınmalı. | 0.5_basys3Assigning.xdc + 1_Main.v |
+| # | Madde | İlgili Dosya(lar) | Durum |
+|---|-------|-------------------|-------|
+| 1 | `gameLoop` modülü tamamen yeniden tasarlanmalı. `while`, `wait`, `$time`, `#delay`, `generate` yanlış kullanımları kaldırılmalı ve FSM tabanlı bir yapıya geçilmeli. | 6_Main_Game_Loop.v | ❌ |
+| 2 | Top modülde `segmentDisplay7`, `ScoreCalc`, `ScoreCalcEndgame`, `playerLEDs`, `playerLEDsEndgame` modülleri örneklenmeli ve bağlanmalı. | 1_Main.v | ❌ |
+| 3 | UART 9600 8N1 modülü yazılmalı ve top modüle entegre edilmeli. | Yeni dosya + 1_Main.v | ❌ |
+| 4 | Oyun durumlarını yöneten ana FSM (konfigürasyon → oyun → tur sonu → endgame) tasarlanmalı. | Yeni dosya veya 1_Main.v | ❌ |
+| ~~5~~ | ~~`ConfigMenu`'deki bit-slice yönü düzeltilmeli: `leds[0:2]` → `leds[2:0]`, `leds[4:7]` → `leds[7:4]`.~~ | ~~2_ConfigMenu.v~~ | ✅ |
+| ~~6~~ | ~~`ScoreCalc`'taki Player 4 indeks hataları düzeltilmeli: `playersPenalized[4]` → `[3]`, `playersLeft[4]` → `[3]`.~~ | ~~7.1_ScoreCalc.v~~ | ✅ |
+| ~~7~~ | ~~`playerLEDs`'deki copy-paste hataları düzeltilmeli.~~ | ~~8.1_playerLEDs.v~~ | ✅ |
+| 8 | `ScoreCalc`'taki non-blocking atama sonrası okuma sorunu çözülmeli. Sıralama mantığı combinational veya çok aşamalı olarak yeniden tasarlanmalı. | 7.1_ScoreCalc.v | ⚠️ |
+| ~~9~~ | ~~LED çıkışı için multiplexer/kontrol mantığı eklenmeli.~~ | ~~1_Main.v~~ | ✅ |
+| 10 | XDC'deki `RsRx` pini ya top modüle eklenmeli ya da XDC'de yorum satırına alınmalı. | 0.5_basys3Assigning.xdc + 1_Main.v | ❌ |
 
 ### 🟡 Orta Öncelik (Doğruluk ve güvenilirlik)
 
-| # | Madde | İlgili Dosya(lar) |
-|---|-------|-------------------|
-| 11 | `ScoreCalcEndgame`'de blocking/non-blocking karışımı giderilmeli. `tieExists` non-blocking'e çevrilmeli. | 7.2_ScoreCalcEndgame.v |
-| 12 | `ScoreCalcEndgame`'de `currentHighest` ve `currentWinners` hesaplaması tek cycle'da yapılamıyor; çok aşamalı veya combinational yapıya çevrilmeli. | 7.2_ScoreCalcEndgame.v |
-| 13 | `ScoreCalc`'ta `playersPenalized` reset bloğunda sıfırlanmalı. | 7.1_ScoreCalc.v |
-| 14 | `playerLEDsEndgame`'de kazanmayanların LED'leri açıkça sıfırlanmalı. | 8.2_playerLEDsEndgame.v |
-| 15 | `ScoreCalc`'ta `player1newTotal` atamasındaki blocking `=` → non-blocking `<=` çevrilmeli. | 7.1_ScoreCalc.v |
-| 16 | `center` wire'ında çoklu sürücü (multi-driver) hatası giderilmeli: `dbC` debounce örneği ve `TusKontrolu`'nun `SinyalBTNC` çıkışı aynı wire'a bağlı. Birisi kaldırılmalı veya ayrı wire'lara bağlanmalı. | 1_Main.v + 5.2_TusKontrolu.v |
-| 17 | Reaksiyon süresi ölçüm mekanizması (1ms çözünürlükle sayaç) tasarlanmalı ve entegre edilmeli. | Yeni dosya |
+| # | Madde | İlgili Dosya(lar) | Durum |
+|---|-------|-------------------|-------|
+| 11 | `ScoreCalcEndgame`'de blocking/non-blocking karışımı giderilmeli. | 7.2_ScoreCalcEndgame.v | ⚠️ |
+| 12 | `ScoreCalcEndgame`'de `currentHighest` ve `currentWinners` hesaplaması tek cycle'da yapılamıyor. | 7.2_ScoreCalcEndgame.v | ⚠️ |
+| ~~13~~ | ~~`ScoreCalc`'ta `playersPenalized` reset bloğunda sıfırlanmalı.~~ | ~~7.1_ScoreCalc.v~~ | ✅ |
+| ~~14~~ | ~~`playerLEDsEndgame`'de kazanmayanların LED'leri açıkça sıfırlanmalı.~~ | ~~8.2_playerLEDsEndgame.v~~ | ✅ |
+| ~~15~~ | ~~`ScoreCalc`'ta `player1newTotal` atamasındaki blocking `=` → non-blocking `<=` çevrilmeli.~~ | ~~7.1_ScoreCalc.v~~ | ✅ |
+| ~~16~~ | ~~`center` wire'ında çoklu sürücü (multi-driver) hatası giderilmeli.~~ | ~~1_Main.v + 5.2_TusKontrolu.v~~ | ✅ |
+| 17 | Reaksiyon süresi ölçüm mekanizması (1ms çözünürlükle sayaç) tasarlanmalı ve entegre edilmeli. | Yeni dosya | ❌ |
 
 ### 🟢 Düşük Öncelik (İyileştirme ve temizlik)
 
