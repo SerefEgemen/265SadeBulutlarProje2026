@@ -363,13 +363,6 @@ Her tur sonunda aktif oyuncu sayısı kontrol edilmeli. Tek kaldıysa → doğru
 
 ---
 
-## Denetim Raporuna (DENETIM_RAPORU.md) Yapılan Düzeltmeler
 
-İlk denetim raporu tekrar gözden geçirildiğinde aşağıdaki hata tespit edilip düzeltilmiştir:
-
-| Bölüm | Eski İfade | Düzeltme |
-|-------|-----------|----------|
-| 1.6 | "BTNC Çift Debounce Sorunu — gereksiz kaynak tüketir ve tutarsızlık yaratabilir" | **"Çoklu Sürücü (Multi-Driver) Hatası — KRİTİK"** olarak güncellendi. `center` wire'ı iki `output reg` tarafından sürülüyor; simülasyonda X değeri, sentezde hata üretir. |
-| 3. Özet, Madde 16 | "BTNC çift debounce sorunu giderilmeli" | **"center wire'ında multi-driver hatası giderilmeli"** olarak güncellendi. |
 
 Raporun geri kalanında hata tespit edilmemiştir.
