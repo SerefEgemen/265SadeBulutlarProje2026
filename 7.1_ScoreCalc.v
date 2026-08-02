@@ -84,7 +84,7 @@ player is penalized = display 0, disregard placement value
 
 
 module ScoreCalc(input clk, rst, eliminate, input[29:0] player1Time, player2Time, player3Time, player4Time, input[3:0] timeoutPlayers, falseStartPlayers, playersIn, input[6:0] player1Total, player2Total, player3Total, player4Total,
-                 output reg[1:0] player1Place, player2Place, player3Place, player4Place, output reg[3:0] playersLeft, playersPenalized, output reg[6:0] player1newTotal, player2newTotal, player3newTotal, player4newTotal
+output reg[1:0] player1Place, player2Place, player3Place, player4Place, output reg[3:0] playersLeft, playersPenalized, output reg[6:0] player1newTotal, player2newTotal, player3newTotal, player4newTotal
     );
     
     always@(posedge clk) begin
@@ -94,6 +94,7 @@ module ScoreCalc(input clk, rst, eliminate, input[29:0] player1Time, player2Time
     player3Place <= 2'b00;
     player4Place <= 2'b00;
     playersLeft <= 4'b0000;
+    playersPenalized <= 4'b0000;
     player1newTotal <= 7'b0;
     player2newTotal <= 7'b0;
     player3newTotal <= 7'b0;
@@ -150,9 +151,9 @@ module ScoreCalc(input clk, rst, eliminate, input[29:0] player1Time, player2Time
     if(playersIn[3]) begin//player4
     if(timeoutPlayers[3] || falseStartPlayers[3]) begin
     player4Place <= 2'b11;
-    playersPenalized[4] <= 1'b1;
+    playersPenalized[3] <= 1'b1;
     if(eliminate) begin
-    playersLeft[4] <= 1'b0;
+    playersLeft[3] <= 1'b0;
     end
     end
     end
@@ -167,20 +168,20 @@ module ScoreCalc(input clk, rst, eliminate, input[29:0] player1Time, player2Time
     if(playersIn[1] && !playersPenalized[1]) begin
     //2) Compare their times, if this player's time is larger, add 1 to their playerPlace. (this drops their placement)
     if(player1Time > player2Time) begin //player1 vs player2
-    player1Place <= (player1Place + 1);
+    player1Place = (player1Place + 1);
     end
     end
     
     //3) repeat comparing to the other players
     if(playersIn[2] && !playersPenalized[2]) begin
     if(player1Time > player3Time) begin //player1 vs player3
-    player1Place <= (player1Place + 1);
+    player1Place = (player1Place + 1);
     end
     end
     
     if(playersIn[3] && !playersPenalized[3]) begin
     if(player1Time > player4Time) begin //player1 vs player4
-    player1Place <= (player1Place + 1);
+    player1Place = (player1Place + 1);
     end
     end
     //This way, The playerPlace is increased for each time smaller than the player's time.
@@ -188,16 +189,16 @@ module ScoreCalc(input clk, rst, eliminate, input[29:0] player1Time, player2Time
     //and after their placement is determined, we can add their score to the total.
     case(player1Place)
     2'b00: begin
-    player1newTotal = (player1Total + 4);
+    player1newTotal <= (player1Total + 4);
     end
     2'b01: begin
-    player1newTotal = (player1Total + 3);
+    player1newTotal <= (player1Total + 3);
     end
     2'b10: begin
-    player1newTotal = (player1Total + 2);
+    player1newTotal <= (player1Total + 2);
     end
     2'b11: begin
-    player1newTotal = (player1Total + 1);
+    player1newTotal <= (player1Total + 1);
     end
     endcase
     end
@@ -211,19 +212,19 @@ module ScoreCalc(input clk, rst, eliminate, input[29:0] player1Time, player2Time
     
     if(playersIn[0] && !playersPenalized[0]) begin
     if(player2Time > player1Time) begin //player2 vs player1
-    player2Place <= (player2Place + 1);
+    player2Place = (player2Place + 1);
     end
     end
     
     if(playersIn[2] && !playersPenalized[2]) begin
     if(player2Time > player3Time) begin //player2 vs player3
-    player2Place <= (player2Place + 1);
+    player2Place = (player2Place + 1);
     end
     end
     
     if(playersIn[3] && !playersPenalized[3]) begin
     if(player2Time > player4Time) begin //player2 vs player4
-    player2Place <= (player2Place + 1);
+    player2Place = (player2Place + 1);
     end
     end
     
@@ -249,19 +250,19 @@ module ScoreCalc(input clk, rst, eliminate, input[29:0] player1Time, player2Time
     
     if(playersIn[0] && !playersPenalized[0]) begin
     if(player3Time > player1Time) begin //player3 vs player1
-    player3Place <= (player3Place + 1);
+    player3Place = (player3Place + 1);
     end
     end
     
     if(playersIn[1] && !playersPenalized[1]) begin
     if(player3Time > player2Time) begin //player3 vs player2
-    player3Place <= (player3Place + 1);
+    player3Place = (player3Place + 1);
     end
     end
     
     if(playersIn[3] && !playersPenalized[3]) begin
     if(player3Time > player4Time) begin //player3 vs player4
-    player3Place <= (player3Place + 1);
+    player3Place = (player3Place + 1);
     end
     end
     
@@ -287,19 +288,19 @@ module ScoreCalc(input clk, rst, eliminate, input[29:0] player1Time, player2Time
     
     if(playersIn[0] && !playersPenalized[0]) begin
     if(player4Time > player1Time) begin //player4 vs player1
-    player4Place <= (player4Place + 1);
+    player4Place = (player4Place + 1);
     end
     end
     
     if(playersIn[1] && !playersPenalized[1]) begin
     if(player4Time > player2Time) begin //player4 vs player2
-    player4Place <= (player4Place + 1);
+    player4Place = (player4Place + 1);
     end
     end
     
     if(playersIn[2] && !playersPenalized[2]) begin
     if(player4Time > player3Time) begin //player4 vs player3
-    player4Place <= (player4Place + 1);
+    player4Place = (player4Place + 1);
     end
     end
     
