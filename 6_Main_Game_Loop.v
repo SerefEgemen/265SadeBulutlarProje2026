@@ -13,14 +13,57 @@ player4: BTND [U17]
 These are the inputs and outputs Main needs:
 
 module gameLoop(input clk, rst, 
- configModeFinished, displayModeFinished, ScoreCalcFinished,
+ configModeFinished, displayModeFinished, ScoreCalcFinished, countdownFinished,
  input[3:0] turnNo, currentTurn, playerNo,
  input BTNU, BTND, BTNL, BTNR, BTNC,
  output reg[29:0] player1Time, player2Time, player3Time, player4Time,
  output reg[3:0] timedOutPlayers, falselyStartedPlayers,
- output reg gameOver, turnOver,
+ output reg gameOver, turnOver, blackout,
  output reg[3:0] currentTurnNew
 );
+
+What should it do:
+5 states:
+
+if (rst):
+state is IDLE
+
+IDLE:
+wait for config to finish.
+if (configModeFinished):
+change state to WAITING
+blackout <= 0 (for 7SegmentDisplay, it uses the input inversely)
+
+WAITING:
+waiting for the display lights to turn off.
+if any player presses a button now, give them a false start penalty (elimination will be done in ScoreCalc)
+if(countDownFinished):
+change state to SCORING
+
+SCORING:
+start the timers for all players that are in the game
+also start the 5 second deadline timer
+when a player presses the button, stop their timer and save their score
+after the deadline timer ends: 
+give all remaining players a timeout penalty
+turnOver <= 1 (for ScoreCalc)
+state change to CALCING
+
+CALCING:
+ScoreCalc is doing stuff in the background. Just wait for BTNC to be pressed.
+if(BTNC):
+increase the currentTurn (with currentTurnNew)
+then check if the game should end or not (currentTurn > turnNo) or (only 1 player is left)
+if (oneOfTheseTwo):
+gameOver <= 1 (for a lot of stuff)
+change state to ENDGAME
+else:
+reset all the stuff to their default values for the next turn
+change state to IDLE
+
+ENDGAME:
+blackout <= 1 (to stop 7SegmentDisplay)
+
 
 */
 
