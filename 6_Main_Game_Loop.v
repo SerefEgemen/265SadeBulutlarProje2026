@@ -13,7 +13,7 @@ player4: BTND [U17]
 These are the inputs and outputs Main needs:
 
 module gameLoop(input clk, rst, 
- configModeFinished, displayModeFinished, ScoreCalcFinished, countdownFinished,
+ configModeFinished, displayModeFinished, ScoreCalcFinished,
  input[3:0] turnNo, currentTurn, playerNo,
  input BTNU, BTND, BTNL, BTNR, BTNC,
  output reg[29:0] player1Time, player2Time, player3Time, player4Time,
@@ -37,7 +37,7 @@ blackout <= 0 (for 7SegmentDisplay, it uses the input inversely)
 WAITING:
 waiting for the display lights to turn off.
 if any player presses a button now, give them a false start penalty (elimination will be done in ScoreCalc)
-if(countDownFinished):
+if(displayModeFinished):
 change state to SCORING
 
 SCORING:
