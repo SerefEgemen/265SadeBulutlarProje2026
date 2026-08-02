@@ -52,10 +52,10 @@ output reg[15:0] leds
     always@ (posedge clk) begin
     
     if(rst) begin
-    player1Leds <= 4'b0;
-    player2Leds <= 4'b0;
-    player3Leds <= 4'b0;
-    player4Leds <= 4'b0;
+    player1Leds <= 4'b0000;
+    player2Leds <= 4'b0000;
+    player3Leds <= 4'b0000;
+    player4Leds <= 4'b0000;
     leds <= 16'b1000_0000_0000_0000; //only the reset light is on
     
     end//of reset
@@ -114,7 +114,7 @@ output reg[15:0] leds
     //player3
     if(playersIn[2]) begin
     if(playersPenalized[2]) begin
-    player2Leds <= 4'b0000;
+    player3Leds <= 4'b0000;
     end else begin
     case(player3Place)
     2'b00: begin
@@ -139,7 +139,7 @@ output reg[15:0] leds
     //player4
     if(playersIn[3]) begin
     if(playersPenalized[3]) begin
-    player2Leds <= 4'b0000;
+    player4Leds <= 4'b0000;
     end else begin
     case(player4Place)
     2'b00: begin
