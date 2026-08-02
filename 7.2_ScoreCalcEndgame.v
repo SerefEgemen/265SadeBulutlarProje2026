@@ -41,7 +41,7 @@ output reg[3:0] winners, output reg[6:0] winningScore, output reg tieExists, cal
     );
     reg[6:0] currentHighest = 7'd0;
     reg[3:0] currentWinners = 4'b0000;
-    reg[3:0] tieFinder = 3'b000;
+    reg[3:0] tieFinder = 4'b0000;
     //3 stage pipeline: Find highest score, find which players have that score, find if there's a tie
     reg calcedHighest;
     reg calcedWinners;
@@ -53,7 +53,7 @@ output reg[3:0] winners, output reg[6:0] winningScore, output reg tieExists, cal
     tieExists <= 1'b0;
     currentHighest <= 7'd0;
     currentWinners <= 4'b0000;
-    tieFinder <= 3'b000;
+    tieFinder <= 4'b0000;
     calcedHighest <= 1'b0;
     calcedWinners <= 1'b0;
     calcFinished <= 1'b0;
