@@ -304,6 +304,9 @@ PDF file, or updating Main's comment
 
 --------------------------------------------
 
+3/8/2026:
+One day before the deadline.
+
 Who did what:
 Design Sources:
 Main                    Mete
@@ -312,12 +315,13 @@ debounce                Meriç
 TusKontrolu             Meriç
 lfsr16                  Egemen
 random_delay_gen        Egemen
-gameLoop                İpek (Assisted by Mete)
+gameLoop                İpek
 segmentDisplay7         Meriç
 ScoreCalc (& Endgame)   Mete
 playerLEDs (& Endgame)  Mete
-UART_Controller         Egemen (Unfinished?)
-UART_TX                 ??? (Unfinished)
+UART_Controller         Egemen
+Binary_to_BCD           Egemen
+UART_TX                 İpek
 
 Constraints:
 basys3Assigning         Digilent (Mete copied it from their official Github Account, They hope this is allowed since it's not a module)
