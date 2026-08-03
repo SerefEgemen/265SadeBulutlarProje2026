@@ -24,11 +24,10 @@ When set, The game configs will begin. And after the configs are done, the game 
 Config needs 3 inputs and 8 bits in total.
 
 1. Player Count (2 bits):
-The game can be played by 2, 3, or 4, people. So 2 bits is enough.
-playerCount = 00 => This Shouldn't Happen
-playerCount = 01 => First option: 2 players
-playerCount = 10 => Second option: 3 players
-playerCount = 11 => Third option: 4 Players
+The game can be played by 2, 3, or 4, people. In order to keep track of which players were eliminated, we use 4 bits
+playerNo[0] = 0 -> Player1 is not in the game
+playerNo[0] = 1 -> player1 is in the game
+Ditto for the rest.
 
 2. Turn Count (4 bits):
 The amount of turns is equal to the (exact bit counter + 1).
