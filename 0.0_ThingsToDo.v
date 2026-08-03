@@ -285,7 +285,6 @@ Stuff we need to do after a week has passed:
 Remaining modules needed:
 UART_Controller (need to display all the correct info)
 UART_TX
-gameLoop (need to fix)
 
 (and TestBenches?)
 
