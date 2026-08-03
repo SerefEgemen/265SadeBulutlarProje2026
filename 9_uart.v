@@ -28,7 +28,7 @@ input[3:0] winners, input[6:0] winnerScore, input tieExists,
     reg [3:0] state;
     reg [3:0] char_index;
 
-    // BCD Çıkışları (İşte senin çözmen gereken kısım burası)
+    
     wire [3:0] yuzler, onlar, birler;
     
     // --- EKSİK PARÇA: BCD CONVERTER ---
