@@ -1,13 +1,21 @@
 `timescale 1ns / 1ps
+
 /*
 NOTES: 
 displayModeFinished'in kararmaSinyali olduğunu düşünüyorum ?? hata olabilir hatırlayamadım tam
 //displayModeFinished = bitisSinyali; blackout = kararmaSinyali -MT
+//changed my TURN looping system based on ^^ because i used displayMF as blackout in the previous one
 output'ta istenen currentTurnNew'ın ne olduğunu tam olarak bilmiyorum ? 
 //module has to update the current turn but you can't just wire an input to an output. ct becomes ctNew outside the gameLoop in Main. -MT 
 gerekirse gray code'dan decimal geçebiliriz eğlenceli geldi araştırınca ondan öyle yazdım. 
 
 //I fixed some stuff. But there might still be bugs here -MT
+
+##PATCH##
+based on the fixes, i made adjustments. here are the notes:
+-changed displayMF to blackout > code // logic fix
+-made the time adjustments more readable
+-a few patches for syntax errors + readability
 
 hatırlatma:
 BTNC : BTNC basım kontrol tur ilerlemesi için [U18]
@@ -16,6 +24,7 @@ player2 : BTNL [W19]
 player3 : BTNR [T17]
 player4: BTND [U17]
 */
+
 module gameLoop(
     input clk, rst, configModeFinished, displayModeFinished, ScoreCalcFinished,
     input[3:0] turnNo, currentTurn, playerNo,
@@ -75,22 +84,22 @@ module gameLoop(
     
     always @(posedge clk) begin
     if(rst)begin
-    current_state <= IDLE;
-    next_state <= 3'b101; //something that isn't a state so it doesn't mess with anything else
-    player1Time <= 30'd0;
-    player2Time <= 30'd0;
-    player3Time <= 30'd0;
-    player4Time <= 30'd0;
-    timedOutPlayers <= 4'd0;
-    falseStartPlayers <= 4'd0;
-    currentTurnNew <= 4'd0;
-    gameOver <= 1'b0;
-    turnOver <= 1'b0;
-    blackout <= 1'b1;
-    end_time <= 30'd0;
-    noOfPlayers <= 3'b000;
+        current_state <= IDLE;
+        next_state <= 3'b101; //something that isn't a state so it doesn't mess with anything else
+        player1Time <= 30'd0;
+        player2Time <= 30'd0;
+        player3Time <= 30'd0;
+        player4Time <= 30'd0;
+        timedOutPlayers <= 4'd0;
+        falseStartPlayers <= 4'd0;
+        currentTurnNew <= 4'd0;
+        gameOver <= 1'b0;
+        turnOver <= 1'b0;
+        blackout <= 1'b1;
+        end_time <= 30'd0;
+        noOfPlayers <= 3'b000;
     end else begin
-    current_state <= next_state;
+        current_state <= next_state;
     end
     
     case(next_state)
@@ -99,7 +108,7 @@ module gameLoop(
     
     CONFIG: begin 
     if (configModeFinished) begin
-    blackout <= 1'b0;
+        blackout <= 1'b0;
     end
     end //give the signal for 7Segment
     
@@ -121,7 +130,7 @@ module gameLoop(
     timedOutPlayers[3] = 1'b1;
     end
     
-    if(!displayModeFinished) begin
+        if(!blackout) begin
             if(BTNU && playerNo[0]) begin
             falseStartPlayers[0] = 1'b1;
             timedOutPlayers[0] = 1'b0;
@@ -138,12 +147,12 @@ module gameLoop(
             falseStartPlayers[3] = 1'b1;
             timedOutPlayers[3] = 1'b0;
             end
-    end else if(displayModeFinished) begin
-            end_time = $time + 2000000000;
-            end_time = end_time + 2000000000;
-            end_time = end_time + 1000000000;
+    end else if(blackout) begin
+            end_time = $time + 2_000_000_000;
+            end_time = end_time + 2_000_000_000;
+            end_time = end_time + 1_000_000_000;
             if($time <= end_time) begin
-            // why so many steps? > 5000000000 nanoseconds are too big for it to register properly, so i added it up in bite-sized pieces.
+            // why so many steps? > 5000000000 nanoseconds are too big for vivado to register properly, so i added it up in bite-sized pieces.
             
                 if(BTNU && !falseStartPlayers[0] && playerNo[0]) begin
                     player1Time = $time;
@@ -170,34 +179,36 @@ module gameLoop(
     
     CALC: begin 
         if(BTNC) begin //waiting for another btnc before advancing.
-        
-        //current turn is an input, so it should go up! gameOver is an output, so i adjust it by checking here.
-        currentTurnNew = (currentTurn + 1'b1);
-        //Check if the new turn would be bigger than the amount of turns. There might be an error here because the turnNo is a 4 bit number.
-        if(currentTurnNew > turnNo)begin
-        gameOver = 1'b1;
-        end else begin
-        noOfPlayers = (playerNo[0] + playerNo[1] + playerNo[2] + playerNo[3]);
-        if(noOfPlayers < 2) begin
-        gameOver = 1'b1;
-        end else begin //new turn incoming, everything used need to be wiped clean again
-        player1Time <= 30'd0;
-        player2Time <= 30'd0;
-        player3Time <= 30'd0;
-        player4Time <= 30'd0;
-        timedOutPlayers <= 4'd0;
-        falseStartPlayers <= 4'd0;
-        currentTurnNew <= 4'd0;
-        gameOver <= 1'b0;
-        turnOver <= 1'b0;
-        blackout <= 1'b1;
-        end_time <= 30'd0;
-        noOfPlayers <= 3'b000;
-        end
-        end
+            
+            //current turn is an input, so it should go up! gameOver is an output, so i adjust it by checking here.
+            currentTurnNew = (currentTurn + 1'b1);
+            //Check if the new turn would be bigger than the amount of turns. There might be an error here because the turnNo is a 4 bit number.
+            if(currentTurnNew > turnNo)begin
+                gameOver = 1'b1;
+            end else begin
+                noOfPlayers = (playerNo[0] + playerNo[1] + playerNo[2] + playerNo[3]);
+                
+                if(noOfPlayers < 2) begin
+                    gameOver = 1'b1;
+                end else begin //new turn incoming, everything used need to be wiped clean again
+                    player1Time <= 30'd0;
+                    player2Time <= 30'd0;
+                    player3Time <= 30'd0;
+                    player4Time <= 30'd0;
+                    timedOutPlayers <= 4'd0;
+                    falseStartPlayers <= 4'd0;
+                    currentTurnNew <= 4'd0;
+                    gameOver <= 1'b0;
+                    turnOver <= 1'b0;
+                    blackout <= 1'b1;
+                    end_time <= 30'd0;
+                    noOfPlayers <= 3'b000;
+                end
+            end
         end
         
     end  //nothing else to do,, idle waiting time for scores etc.
+        
     END: begin end //nothing to do
     
     endcase
