@@ -313,7 +313,7 @@ debounce                Meriç
 TusKontrolu             Meriç
 lfsr16                  Egemen
 random_delay_gen        Egemen
-gameLoop                İpek (Unfinished)
+gameLoop                İpek (Assisted by Mete)
 segmentDisplay7         Meriç
 ScoreCalc (& Endgame)   Mete
 playerLEDs (& Endgame)  Mete
