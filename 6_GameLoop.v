@@ -2,8 +2,12 @@
 /*
 NOTES: 
 displayModeFinished'in kararmaSinyali olduğunu düşünüyorum ?? hata olabilir hatırlayamadım tam
+//displayModeFinished = bitisSinyali; blackout = kararmaSinyali -MT
 output'ta istenen currentTurnNew'ın ne olduğunu tam olarak bilmiyorum ? 
+//module has to update the current turn but you can't just wire an input to an output. ct becomes ctNew outside the gameLoop in Main. -MT 
 gerekirse gray code'dan decimal geçebiliriz eğlenceli geldi araştırınca ondan öyle yazdım. 
+
+//I fixed some stuff. But there might still be bugs here -MT
 
 hatırlatma:
 BTNC : BTNC basım kontrol tur ilerlemesi için [U18]
@@ -16,19 +20,20 @@ module gameLoop(
     input clk, rst, configModeFinished, displayModeFinished, ScoreCalcFinished,
     input[3:0] turnNo, currentTurn, playerNo,
     input BTNU,
-    input BTNC,
     input BTND,
-    input BTNR,
     input BTNL,
-    output
-    reg gameOver, turnOver,
-    reg[29:0] player1Time, player2Time, player3Time, player4Time,
-    reg[3:0] timedOutPlayers, falseStartPlayers, currentTurnNew
+    input BTNR,
+    input BTNC,
+    output reg[29:0] player1Time, player2Time, player3Time, player4Time,
+    output reg[3:0] timedOutPlayers, falseStartPlayers, currentTurnNew,
+    output reg gameOver, turnOver, blackout
     );
     
-    reg end_time = 0;
+    reg[29:0] end_time = 30'd0;
     
-    reg[1:0] current_state, next_state;
+    reg[2:0] current_state, next_state;
+    
+    reg[2:0] noOfPlayers = 3'b000;
     
     localparam IDLE = 3'b000;
     localparam CONFIG = 3'b001;
@@ -69,15 +74,34 @@ module gameLoop(
     end
     
     always @(posedge clk) begin
-    if(rst)begin current_state <= IDLE; 
+    if(rst)begin
+    current_state <= IDLE;
+    next_state <= 3'b101; //something that isn't a state so it doesn't mess with anything else
+    player1Time <= 30'd0;
+    player2Time <= 30'd0;
+    player3Time <= 30'd0;
+    player4Time <= 30'd0;
+    timedOutPlayers <= 4'd0;
+    falseStartPlayers <= 4'd0;
+    currentTurnNew <= 4'd0;
+    gameOver <= 1'b0;
+    turnOver <= 1'b0;
+    blackout <= 1'b1;
+    end_time <= 30'd0;
+    noOfPlayers <= 3'b000;
     end else begin
     current_state <= next_state;
     end
     
     case(next_state)
-    IDLE: begin end //idle
+    IDLE: begin
+    end //idle, all values are default values
     
-    CONFIG: begin end //has nothing to do yet
+    CONFIG: begin 
+    if (configModeFinished) begin
+    blackout <= 1'b0;
+    end
+    end //give the signal for 7Segment
     
     TURN: begin 
     /* 
@@ -145,12 +169,32 @@ module gameLoop(
     end   
     
     CALC: begin 
-        wait(BTNC); //waiting for another btnc before advancing.
+        if(BTNC) begin //waiting for another btnc before advancing.
         
         //current turn is an input, so it should go up! gameOver is an output, so i adjust it by checking here.
-        //potential error: depending on when currentTurn go up by 1, it might skip the last turn. if so, the == should be changed to >.
-        if(currentTurn == turnNo)begin
+        currentTurnNew = (currentTurn + 1'b1);
+        //Check if the new turn would be bigger than the amount of turns. There might be an error here because the turnNo is a 4 bit number.
+        if(currentTurnNew > turnNo)begin
         gameOver = 1'b1;
+        end else begin
+        noOfPlayers = (playerNo[0] + playerNo[1] + playerNo[2] + playerNo[3]);
+        if(noOfPlayers < 2) begin
+        gameOver = 1'b1;
+        end else begin //new turn incoming, everything used need to be wiped clean again
+        player1Time <= 30'd0;
+        player2Time <= 30'd0;
+        player3Time <= 30'd0;
+        player4Time <= 30'd0;
+        timedOutPlayers <= 4'd0;
+        falseStartPlayers <= 4'd0;
+        currentTurnNew <= 4'd0;
+        gameOver <= 1'b0;
+        turnOver <= 1'b0;
+        blackout <= 1'b1;
+        end_time <= 30'd0;
+        noOfPlayers <= 3'b000;
+        end
+        end
         end
         
     end  //nothing else to do,, idle waiting time for scores etc.
