@@ -69,23 +69,25 @@ Binary_to_BCD bcd1 (
             char_index <= 0;
         end else begin
         if(!gameOver) begin//mid game terminal output -MT
-        /*
-        The terminal output should be something like this:
-        T: [[currentTurn]]
-        P1: [[p1Time]] / [[p1Place]]
-        P2: [[p2Time]] / [[p2Place]]
-        P3: [[p3Time]] / [[p3Place]]
-        P4: [[p4Time]] / [[p4Place]]
-        TO: [[timeoutPlayers]]
-        FS: [[falseStartPlayers]]
-        TS:
-        1: [[p1Total]]
-        2: [[p2Total]]
-        3: [[p3Total]]
-        4: [[p4Total]]
-        
-        I have no idea how to do this -MT
-        */
+        // p1Time (30 bit cycle sayısı) -> "a.bc" ASCII, 4 byte döndürür
+// {saniye_ascii, nokta_ascii, onlar_santisaniye_ascii, birler_santisaniye_ascii}
+function [31:0] time_to_ascii;
+    input [29:0] cycles;
+    reg [29:0] kalan;
+    reg [3:0]  saniye;
+    reg [6:0]  santisaniye; // 0-99 arasi
+
+    begin
+        saniye      = cycles / 30'd100_000_000;   // 100_000_000 cycle = 1 saniye (100MHz varsayimiyla)
+        kalan       = cycles % 30'd100_000_000;
+        santisaniye = kalan / 30'd1_000_000;       // 1_000_000 cycle = 1 santisaniye (yani 0.01 sn)
+
+        time_to_ascii = { 8'h30 + saniye[3:0],              // 'a'
+                           8'h2E,                            // '.'
+                           8'h30 + (santisaniye / 4'd10),    // 'b' (onlar hanesi)
+                           8'h30 + (santisaniye % 4'd10) };  // 'c' (birler hanesi)
+    end
+endfunction
             case (state)
                 IDLE: begin
                     tx_start <= 0;
