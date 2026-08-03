@@ -96,9 +96,9 @@ p1Time, p2Time, p3Time, p4Time, timedOut, falselyStarted,
 p1Total, p2Total, p3Total, p4Total, p1Place, p2Place, p3Place, p4Place,
 playersLeft, allNaughtyBois, p1TotalNew, p2TotalNew, p3TotalNew, p4TotalNew, midCalcinish);
 assign p1Total = p1TotalNew;
-assign p1Total = p2TotalNew;
-assign p1Total = p3TotalNew;
-assign p1Total = p4TotalNew;
+assign p2Total = p2TotalNew;
+assign p3Total = p3TotalNew;
+assign p4Total = p4TotalNew;
 assign playersIn = playersLeft;
 //Endgame Score Calculator
 wire[3:0] winners;
