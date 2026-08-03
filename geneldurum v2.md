@@ -54,10 +54,10 @@
   assign p1Total = p3TotalNew;
   assign p1Total = p4TotalNew;
   ```
-  Bunlar `p2Total`, `p3Total`, `p4Total` olmalı. Ayrıca bu assign'lar çift sürücü yaratıyor çünkü `p1Total`, `p2Total` vb. aynı zamanda `ScoreCalc`'ın çıkışları. Bu döngüsel atama sentezde hata verecektir.
+  Bunlar `p2Total`, `p3Total`, `p4Total` olmalı. Ayrıca bu assign'lar çift sürücü yaratıyor çünkü `p1Total`, `p2Total` vb. aynı zamanda `ScoreCalc`'ın çıkışları. Bu döngüsel atama sentezde hata verecektir. (Düzeltildi, -MT)
 - **`assign currentTurn = currentTurnNew;` döngüsel:** `currentTurn` `ConfigMenu`'den çıkış olarak geliyor (output reg) ve aynı zamanda `gameLoop`'un çıkışı olan `currentTurnNew`'e atanıyor. Bu çift sürücü sorunu.
 - **`assign playersIn = playersLeft;` döngüsel:** `playersIn` hem `ConfigMenu` çıkışı hem de `ScoreCalc` çıkışı — çift sürücü.
-- **`ThingsToDo broThinksHesPartOfTheTeam();`** → Tanımsız modül, sentezde hata verecek (şaka amaçlı eklenmişse kaldırılmalı).
+- **`ThingsToDo broThinksHesPartOfTheTeam();`** → Tanımsız modül, sentezde hata verecek (şaka amaçlı eklenmişse kaldırılmalı). (Düzeltildi -MT)
 
 ### 🟡 İyileştirme
 - `random_delay_gen`'in `tetiklenme` girişi şu an `center`'a bağlı. gameLoop yazıldığına göre bu bağlantı gameLoop'un kontrol sinyaline çevrilmeli.
