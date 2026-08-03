@@ -1,9 +1,23 @@
 `timescale 1ns / 1ps
 /*
-I will update this comment later
--MT
+This is the Main module. The module that links the board inputs to everything else using the constraint file.
+And every module with others using their "I am finished" flags. This way each module works in tandem with one another.
 
+For the detailed instructions on how individual modules work, check the modules themselves.
 
+PS: All design sources have a tiny ASCII art at the end. This is done because
+1) It gives our project a unique signature
+2) It's funny
+3) We're so tired as a 4 person group and need this slight bit of whimsy to keep going.
+
+Group "Plain Clouds" (Sade Bulutlar):
+Mete Sipahi
+İpek Ceren Yılmaz
+Meriç Şeref Gültekin
+Şeref Egemen Yılmaz
+
+You can also check out our Github Repository we made for this project and see the commit history:
+https://github.com/SerefEgemen/265SadeBulutlarProje2026
 */
 
 
@@ -19,6 +33,9 @@ wire left;
 wire right;
 wire center;
 wire centerForConfigSpecifically;
+
+ThingsToDo broThinksHesPartOfTheTeam();
+//didn't want it be left alone whe it was with us since the beginning.
 
 
 //Debouncing BTNC specifically for ConfigMenu. The rest is debounced with TusKontrolu
@@ -101,41 +118,22 @@ assign ledsGame = ((gameOver)? ledsEndgame : ledsMidgame); //game leds call scor
 assign led = ((confinish)? ledsGame : ledsConfig); //leds call Config or the mess one line above
 
 //UART
-//Need to see the UART module for this.
-/*
-    inputs: 
-    clk
-    rst
-    gameOver
-    calculatorFinished
-    ***midGame only inputs***
-    currentTurn
-    playersIn
-    timeoutPlayers
-    falseStartPlayers
-    player1Total
-    player2Total
-    player3Total
-    player4Total
-    player1Time
-    player2Time
-    player3Time
-    player4Time
-    player1Place
-    player2Place
-    player3Place
-    player4Place
-    ***endgame only inputs***
-    winners
-    winnerScore
-    tieExists
+wire[7:0] terminalData;
+wire txStartSignal;
+wire txFree;
+//Controller
+UART_Controller hadNoTimeToOverseeThis(clk, rst, gameOver, calcinish, txFree,
+/*Inputs for MidGame Terminal output*/
+currentTurn, playersIn, timedOut, falselyStarted,
+p1Total, p2Total, p3Total, p4Total,
+p1Time, p2Time, p3Time, p4Time,
+p1Place, p2Place, p3Place, p4Place,
+/*Inputs for Endgame Terminal output*/
+winners, winnerscore, tie,
+txStartSignal, terminalData);
+//TX
+UART_TX ughh(clk, rst, terminalData, txStartSignal, txFree, RsTx);
 
-    outputs:
-    RsTx
-    
-    
-
-*/
 
 endmodule
 
