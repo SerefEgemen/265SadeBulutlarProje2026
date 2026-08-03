@@ -37,7 +37,7 @@ initial begin
     kazananMsg[8]=8'h56; kazananMsg[9]=8'h41; kazananMsg[10]=8'h52;
     kazananMsg[11]=8'h0D;kazananMsg[12]=8'h0A;
 end
-    // FSM Durum Kodlamalar˝
+    // FSM Durum Kodlamalar√Ω
     localparam IDLE = 0;
     localparam CHECK_END_COND = 1;
     localparam TX_NORMAL_TURN = 2;
@@ -54,7 +54,7 @@ end
     
     
    
-    // --- EKS›K PAR«A: BCD CONVERTER ---
+    // --- EKS√ùK PAR√áA: BCD CONVERTER ---
     wire [3:0]  onlar, birler,yuzler;
 
 Binary_to_BCD bcd1 (
@@ -94,7 +94,7 @@ Binary_to_BCD bcd1 (
                 end
 
                 CHECK_END_COND: begin
-                    // Eleme modunda tek ki˛i kal˝rsa veya turlar biterse gameOver 1 olur
+                    // Eleme modunda tek ki√æi kal√Ωrsa veya turlar biterse gameOver 1 olur
                     if (gameOver) state <= TX_GAME_OVER_MSG;
                     else state <= TX_NORMAL_TURN;
                 end
@@ -180,13 +180,13 @@ end
                             tx_data <= 8'h3A; // ':'
                             tx_start <= 1;
                         end else if (char_index == 2) begin
-                            tx_data <= yuzler + 8'h30; // Y¸zler basama˝
+                            tx_data <= yuzler + 8'h30; // Y√ºzler basama√∞√Ω
                             tx_start <= 1;
                         end else if (char_index == 3) begin
-                            tx_data <= onlar + 8'h30;  // Onlar basama˝
+                            tx_data <= onlar + 8'h30;  // Onlar basama√∞√Ω
                             tx_start <= 1;
                         end else if (char_index == 4) begin
-                            tx_data <= birler + 8'h30; // Birler basama˝
+                            tx_data <= birler + 8'h30; // Birler basama√∞√Ω
                             tx_start <= 1;
                         end else begin
                             state <= DONE; 
@@ -207,7 +207,7 @@ end
 
 
                 TX_NORMAL_TURN: begin
-                    // Normal tur verilerini bas (S¸reler, cezalar vs.)
+                    // Normal tur verilerini bas (S√ºreler, cezalar vs.)
                     state <= DONE;
                 end
 
@@ -220,7 +220,7 @@ end
 
 
                 DONE: begin
-                    // Sistem s˝f˝rlanana veya yeni tur ba˛layana kadar bekle
+                    // Sistem s√Ωf√Ωrlanana veya yeni tur ba√ælayana kadar bekle
                     if (!scoreCalcDone) state <= IDLE;
                 end
             endcase
