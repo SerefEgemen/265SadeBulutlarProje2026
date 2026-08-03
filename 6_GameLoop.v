@@ -16,6 +16,7 @@ based on the fixes, i made adjustments. here are the notes:
 -changed displayMF to blackout > code // logic fix
 -made the time adjustments more readable
 -a few patches for syntax errors + readability
+- next_state & current_state 2bit -> 3 bit //logic error
 
 hatırlatma:
 BTNC : BTNC basım kontrol tur ilerlemesi için [U18]
@@ -40,7 +41,7 @@ module gameLoop(
     
     reg[29:0] end_time = 30'd0;
     
-    reg[2:0] current_state, next_state;
+    reg[3:0] current_state, next_state;
     
     reg[2:0] noOfPlayers = 3'b000;
     
