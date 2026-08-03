@@ -1,9 +1,7 @@
 `timescale 1ns / 1ps
 /*
-This is as far as I can go right now.
-
-We need to fix MainGameLoop ASAP!!!!
-We also need UART to finish
+I will update this comment later
+-MT
 
 
 */
@@ -61,7 +59,7 @@ wire[29:0] p1Time, p2Time, p3Time, p4Time;
 wire[3:0] timedOut, falselyStarted, allNaughtyBois;
 wire[3:0] currentTurnNew;
 
-gameLoop theMainTroublemaker(clk, rst, confinish, displinish, calcinish, turnNo, currentTurn, playersIn, up, down, left, right, center, p1Time, p2Time, p3Time, p4Time, timedOut, falselyStarted, gameOver, turnOver, turnOffDisplay, currentTurnNew);
+gameLoop theMainTroublemaker(clk, rst, confinish, displinish, calcinish, turnNo, currentTurn, playersIn, up, down, left, right, center, p1Time, p2Time, p3Time, p4Time, timedOut, falselyStarted, currentTurnNew, gameOver, turnOver, turnOffDisplay);
 assign currentTurn = currentTurnNew;
 
 
@@ -81,9 +79,9 @@ p1Time, p2Time, p3Time, p4Time, timedOut, falselyStarted,
 p1Total, p2Total, p3Total, p4Total, p1Place, p2Place, p3Place, p4Place,
 playersLeft, allNaughtyBois, p1TotalNew, p2TotalNew, p3TotalNew, p4TotalNew, midCalcinish);
 assign p1Total = p1TotalNew;
-assign p2Total = p2TotalNew;
-assign p3Total = p3TotalNew;
-assign p4Total = p4TotalNew;
+assign p1Total = p2TotalNew;
+assign p1Total = p3TotalNew;
+assign p1Total = p4TotalNew;
 assign playersIn = playersLeft;
 //Endgame Score Calculator
 wire[3:0] winners;
@@ -134,6 +132,8 @@ assign led = ((confinish)? ledsGame : ledsConfig); //leds call Config or the mes
 
     outputs:
     RsTx
+    
+    
 
 */
 
