@@ -34,9 +34,10 @@ wire right;
 wire center;
 wire centerForConfigSpecifically;
 
+/*
 ThingsToDo broThinksHesPartOfTheTeam();
-//didn't want it be left alone whe it was with us since the beginning.
-
+//Didn't want it be left alone whe it was with us since the beginning. I guess it can stay here as a comment.
+*/
 
 //Debouncing BTNC specifically for ConfigMenu. The rest is debounced with TusKontrolu
 debounce dbC(btnC, clk, rst, centerForConfigSpecifically);
