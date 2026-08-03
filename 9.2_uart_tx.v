@@ -1,6 +1,18 @@
  `timescale 1ns / 1ps
 
-// DEFINITELY check for bugs.
+/* 
+update 1 patch notes:
+-explanations added
+-a system for preventing data leak vbvb. was added in case of rst mid transmission
+-1 unnecessary clock deleted, only 2 grace-periods exist now: pre-transmission and post-transmission. this clock can be edited to be lowered in case of slowness etc.
+-cleaned up a bit of code
+-ascii art baptism has been added. welcome to the family uart_fx
+
+NOTES:
+coded in github, should be checked for syntax errors which i cannot do because i am currently coding on phone because my computer killed itself. happens
+if there is a logical error regarding clk_trigger or not should be checked. i am not %100 sure i understand where it goes 1 or 0 which i do not like. any explanations regarding this is welcome to limit unnecessary errors.
+recommendations for new ascii art are welcome. more than welcome .
+*/
 
 module UART_TX (
     input clk, rst,              
@@ -41,49 +53,68 @@ module UART_TX (
         FREE: if(!state_UARDTX) next_state <= SEND;
         SEND: if(bit_index == 8) next_state <= DOWN; 
         DOWN: ; //will auto send inside the code case. it's a counting down machine. send does it before sending data too
-        default: next_state = IDLE; //send to idle immediately, will go to next states if needed.
+        default: next_state = IDLE; //send to idle immediately, will go to next states if in those states of course.
     endcase
     end
     always @(posedge clk) begin
     
     if(rst)begin
         current_state <= IDLE;
-        TxD <= 1'b0;
-        state_UARDTX <= 1'b0; //statis
-        clock_count <= 0;
-        bit_index <= 0;
     end else begin
         current_state <= next_state;
     end
         case (next_state)
         
-            IDLE: begin end //all values default.
+            IDLE: begin 
+            TxD <= 1'b1;
+            //this bit is in HIGH position when in idle, to be able to tell apart wire damages etc. 
+            state_UARDTX <= 1'b0; //statis
+            clock_count <= 0;
+            bit_index <= 0;
+             
+            /*
+            ## explanation for the if usage below ##
+            for detailed introduction to logic, head to FREE for the explanation part.
+            the code below allows me to reset everything up if the controller check is failed. i do this so that the code does not get locked up,
+            in a state of rst > !clk_trigger > !rst, which was the weakness of saving data up until patched here.
+            after rst, the code automatically goes to FREE. in rst, if clk_trigger is gone, so is the data.
+            */
+             
+            if((saved_data != 0) && !clk_trigger)begin
+            saved_data <= 0;
+            bit_index <= 0;
+            end
+            end //all values default.
             
             FREE: begin
             
-                TxD <= 1'b1; //uart idle
-                state_UARDTX <= 1'b1; //code idle ready for usage
-                //reset in values for a fresh start
+                TxD <= 1'b1; //uart idle still
+                state_UARDTX <= 1'b1; //code idle -> free - module ready for usage
+             
+                //reset values for a fresh start
                 clock_count <= 0;
                 bit_index <= 0;
-                
+             
+                /*
+                Explanation for Code Below
+                in here, we get our data into an array for it to not change or get altered mid transmission, and to be able to transit the first taken data fully.
+                in the DOWN period, the system resets saved_data back to 0 to wipe out and get ready for another transmission.
+                this allows us to return to transmitting data even if statis mode is called mid-transmission, and it will be able to continue onwards without any data leaks.
+                basically, if a transmission 
+                */
+             
                 if (clk_trigger == 1'b1) begin //controller trigger
+                 if(saved_data == 0) begin
                     saved_data <= data_in; //take data immediately to save
+                 end
                     state_UARDTX <= 1'b0;//busy now
                 end
                 
             end
             
             
-            SEND: begin
-            //count once
-                if (clock_count < BAUD_LIMIT) begin
-                    clock_count <= clock_count + 1;
-                end else begin
-                    clock_count <= 0;
-                end
-                
-            //twice then work
+            SEND: begin 
+             //the clock is here to give the receiver a time frame to get ready for the next frame. 
                 if (clock_count < BAUD_LIMIT) begin
                     clock_count <= clock_count + 1;
                 end else begin
@@ -101,9 +132,10 @@ module UART_TX (
                 TxD <= 1'b1; //stopping bit
                 
                 if (clock_count < BAUD_LIMIT) begin
-                    clock_count <= clock_count + 1;
+                    clock_count <= clock_count + 1; //same thing here. time frame for all devices to have a breathing room. 
                 end else begin
                     clock_count <= 0;
+                    saved_date <= 0;
                     next_state <= IDLE; //everything is complete so ship to idle
                 end
                 
@@ -112,3 +144,39 @@ module UART_TX (
         endcase
     end
 endmodule
+
+/*
+
+⠀⠠⢀⠰⣰⣼⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡿⣿⣿⣿⣿⣿
+⠀⡁⠂⠔⡹⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣷⣿⣿⣿⣿
+⠀⠄⠡⡈⣔⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡿⠿⢿⣿⡿⡿⠿⢿⣿⣿⣿⠿⢿⡿⠿⠿⣿⣿⣿⡿⢿⣿⣿⣿⣿⣿⣿⣿⣿
+⠀⠌⡁⢒⡹⣿⣿⣿⣿⠟⢛⣉⣩⣩⣭⡥⣶⣤⣧⣤⣤⣾⡁⠂⢶⣶⡿⣀⣰⣯⣬⣶⡟⠀⣾⢾⠆⣠⣯⣭⣷⠆⠈⠩⡍⠙⠛⢿⣿⣿
+⠀⢂⠐⢤⣃⣿⣿⣿⣿⢸⣷⣾⠿⢿⡋⢐⣠⣿⣷⣿⣾⣄⠐⠂⠨⠟⠛⡿⣹⠟⠫⡧⠈⢓⣥⣶⣶⣶⣮⡭⠓⠀⠀⠻⣿⠁⡆⢸⣿⣿
+⣼⣄⢧⣿⣿⣿⣿⣿⣿⡇⣼⡇⠀⡄⣿⣼⣿⣿⣿⣿⣿⣿⠃⠀⠀⠀⠀⠛⠻⡄⢀⠿⣣⣿⣿⣿⣿⣿⣿⡿⠀⠀⠀⠀⠘⠄⠀⣧⣿⣿
+⠐⡌⣻⣿⣯⣷⣿⣿⣧⢋⣿⣯⣴⣾⣿⣿⣿⣿⡿⠿⢿⠯⡐⢀⢻⡄⠀⠀⠀⠙⠸⣿⣿⣿⣿⣿⡿⠟⠿⠟⡀⢡⣃⠀⠀⠁⠀⢹⣿⣿
+⠈⡔⢠⢳⢿⣿⣿⣿⣟⡬⣿⣟⠀⣿⣿⣿⡿⠁⠀⠀⠀⠀⠢⢡⠸⣗⠀⠀⠀⠀⣸⣿⣿⣿⣿⠇⠀⠀⠀⠀⠐⡀⢻⡆⠀⠀⠁⣔⣿⣿
+⡐⢌⠢⢌⠻⣿⣿⣿⣿⡷⢻⢷⡇⣿⣿⣿⠁⠀⠀⠀⠀⠀⠀⠃⣺⠏⠀⢀⣤⠀⢹⣿⣿⡿⠏⠀⠀⠀⠀⠀⠀⠀⣹⡇⠀⠀⢘⣿⣿⣿
+⣘⢤⢓⣾⣿⣿⣿⣿⣿⠿⣼⣟⠠⢺⣿⣿⡄⠀⠀⠀⠀⠀⠀⣨⠋⠀⢀⣿⡯⠄⠀⠙⣿⣧⡀⠀⠀⠀⠀⠀⠀⢀⡿⠀⠀⠀⢸⣿⣿⣿
+⣽⣞⡧⣿⣻⣿⣿⣿⣿⣬⢻⣷⣴⠳⣿⣿⣿⣦⣄⡀⡀⠔⢊⣁⡴⠊⣹⡿⢅⡈⠄⠀⠈⠻⠿⠦⡄⡀⢀⠀⠄⠋⠁⠀⠀⠀⢀⣿⣿⣿
+⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡜⡟⣽⣷⣿⣿⡿⢿⣾⡷⠯⢟⠫⠋⠒⠁⢸⣽⠆⡐⠀⠀⠀⠀⠰⠓⠒⠒⠒⠀⠀⠀⠀⠀⠠⠠⣼⣿⣿⣿
+⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⢓⣷⠟⣫⠻⣿⣿⣷⣦⣠⡦⠕⠂⠀⢀⣠⣴⣟⡀⠄⠀⠀⠀⠀⠀⠀⢄⣀⡀⡀⣀⡐⠈⠰⠠⠉⣾⣿⣿⣿
+⣿⣿⣿⣿⣿⣿⣿⣿⣿⣧⢻⢸⠸⠭⡞⠿⣿⣿⡿⠛⠀⠌⠒⣰⣿⣿⣿⣿⣷⣄⠀⠀⡀⠀⠀⠈⠀⠀⠋⠛⢿⡿⣯⡆⡇⢉⣾⣿⣿⣿
+⣿⣿⣿⣿⣿⣿⣿⣿⣿⣷⣇⣿⣄⠚⢙⣻⠋⠋⡡⠋⠀⣦⣼⣿⣿⣿⣿⣿⣿⣿⣿⣶⣤⣀⠀⠁⠀⠁⠀⠂⠀⠉⠻⠟⡇⢸⣿⣿⣿⣿
+⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⢱⣿⡇⣿⣿⡇⢹⠆⣱⠀⢀⣿⣿⣿⡿⠿⠉⠉⠁⠈⠉⠉⠹⠿⣶⠀⠀⠀⠸⣷⣆⢷⡀⠀⢀⢸⣿⣿⣿⣿
+⣿⣿⣿⣿⣿⣿⣿⣿⣟⣿⣧⢽⡧⣿⣿⡁⠀⠖⠀⢀⣜⠟⠋⠁⣀⣤⣤⡄⢠⣤⣤⡀⠀⠀⠈⠑⠀⠀⠀⢛⣿⣿⠫⠃⡀⣴⣿⣿⣿⣿
+⣿⣿⣿⣿⣿⣿⣿⣿⣿⣮⣻⣼⡿⣸⣿⠆⠀⡀⢢⣿⠏⠀⣠⣶⣿⣿⡿⠿⠸⠿⠟⠄⢠⣶⠀⠀⠀⠀⠀⠈⠋⠉⣵⠰⠁⢿⣿⣿⣿⣿
+⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⢸⣏⠟⠉⢸⣿⣿⢿⠃⠀⠘⠋⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⠀⡿⠀⢰⣿⣿⣿⣿⣿
+⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⠹⣿⢃⢰⣼⣿⣿⡟⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠐⠀⠀⠀⠀⠀⠀⠘⣿⣿⣿⣿⣿
+⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⢹⣿⣿⡿⢟⣉⣿⡇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢸⡄⠀⠀⠠⠀⠀⠠⣻⣿⣿⣿⣿
+⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⢸⣿⡇⡠⣼⣿⣿⡇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣼⡃⠀⠀⠀⠀⠀⣸⣿⣿⣿⣿⣿
+⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡆⣿⣆⣩⣞⣹⣿⡇⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⢴⢶⡂⠀⠀⠀⠀⠀⣿⠁⠀⠀⢠⡿⠀⠘⣿⣿⣿⣿⣿
+⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡏⣿⡿⠟⠙⣿⣿⣧⠀⠀⠀⠀⠀⢠⣰⠲⠀⢠⡆⠈⡄⠀⠀⠐⠀⠰⣿⠀⠀⠶⠛⣇⠀⠱⣿⣿⣿⣿⣿
+⣿⣷⣽⢻⣿⡝⣿⣿⣿⣿⣿⣷⣙⢁⣄⣠⣾⣻⣿⠀⠀⠀⠀⠀⣺⢧⠆⠁⢲⠍⣏⠀⡀⠀⠀⠀⢰⡏⠀⠀⠀⣸⠇⠀⣼⣿⢿⠿⣿⣿
+⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⢺⣿⣿⣿⡏⠀⡟⡅⠀⠀⠀⠀⡎⡟⠊⠀⠈⣷⠈⠁⡄⠀⠀⠀⣿⠁⠀⠀⠀⠀⠀⠀⣾⣿⣧⣷⣾⣿
+⣿⣿⣿⣿⣿⣟⣿⣿⣿⣿⣿⡇⢺⠛⠏⠉⢧⢤⣷⣿⠀⠀⠀⠀⣣⡘⠅⠀⢠⠗⡞⡰⠀⠀⠀⢀⡏⠀⠀⢠⠀⠀⡐⠀⠸⣼⠿⣿⣿⣿
+⣽⢾⣽⢻⣟⢿⡻⣾⣿⣿⣿⠭⣾⣷⣦⣿⡟⠈⢈⣽⣦⠀⠀⠀⡏⡈⡅⠀⢸⣃⣁⠖⡁⠀⠀⠈⠀⠀⠀⠰⠿⡿⠕⠀⢱⣭⢍⡟⣿⢿
+⢎⡷⣸⢳⣏⢾⡱⣻⢯⠻⣝⣓⠝⠋⠙⠋⠀⠘⢿⠩⠿⣷⣄⡀⢼⡷⠀⠀⢸⣿⣦⡤⠐⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠐⣽⢿⡾⣿⣿⢿
+⣯⠰⣉⠗⢮⡓⠧⡙⢮⠓⡸⣹⠆⣷⣤⡀⠀⣀⣠⣶⣤⣦⣝⡓⢯⡒⠁⠀⢸⣿⠯⡕⠂⠀⠀⠀⠀⠀⠀⠀⠴⠖⠂⠐⣛⣯⢫⡸⢯⣏
+⢦⡱⣀⠊⠴⡁⢎⡱⠌⡈⠅⡌⢡⣏⣩⣍⢭⣩⢉⣉⣉⠍⣉⠍⣷⡍⠀⠀⢸⣿⣿⡥⡐⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠟⡴⢫⡏⠘⠌
+
+*/
