@@ -8,10 +8,15 @@ update 1 patch notes:
 -cleaned up a bit of code
 -ascii art baptism has been added. welcome to the family uart_fx
 
-NOTES:
-coded in github, should be checked for syntax errors which i cannot do because i am currently coding on phone because my computer killed itself. happens
-if there is a logical error regarding clk_trigger or not should be checked. i am not %100 sure i understand where it goes 1 or 0 which i do not like. any explanations regarding this is welcome to limit unnecessary errors.
-recommendations for new ascii art are welcome. more than welcome .
+patch 1.1:
+-syntax errors checked. 1 found: i wrote saved_date instead of saved_data in line 138.
+-actually finished my explanation in FREE - i apparently forgot the first time
+-changed bit index to 8 from 7. because it needs to. send the 7th one. you know. the 8th bit. life-changing revelation right there
+-checked uart.v . tx_start seems to be my clk_trigger. tx_start changes happen after the transmission is Done done, so, my logic seems to be correct. rejoice
+
+THINGS TO DO:
+my code gives out 0 when busy, and 1 when free. uart.v seems to get the opposite. lets check the logics and see if they align before we ship this out
+definitely should be checked. making sure.
 */
 
 module UART_TX (
@@ -100,7 +105,7 @@ module UART_TX (
                 in here, we get our data into an array for it to not change or get altered mid transmission, and to be able to transit the first taken data fully.
                 in the DOWN period, the system resets saved_data back to 0 to wipe out and get ready for another transmission.
                 this allows us to return to transmitting data even if statis mode is called mid-transmission, and it will be able to continue onwards without any data leaks.
-                basically, if a transmission 
+                basically, if a transmission is interrupted, we continue onwards after the error is gone.
                 */
              
                 if (clk_trigger == 1'b1) begin //controller trigger
@@ -120,7 +125,7 @@ module UART_TX (
                 end else begin
                     clock_count <= 0;
                     
-                    if (bit_index < 7) begin
+                 if (bit_index < 8) begin
                         TxD <= saved_data[bit_index]; //send out info
                         bit_index <= bit_index + 1; // move to next bit
                     end
