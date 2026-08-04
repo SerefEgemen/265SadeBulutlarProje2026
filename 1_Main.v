@@ -93,7 +93,7 @@ wire[3:0] playersLeft;
 wire[1:0] p1Place, p2Place, p3Place, p4Place; //for one round only, totals will determine the final order.
 wire midCalcinish;
 ScoreCalc calcIsShortForCalculatorBtw(clk, rst, elimination, gameOver, turnOver, 
-p1Time, p2Time, p3Time, p4Time, timedOut, falselyStarted, 
+p1Time, p2Time, p3Time, p4Time, timedOut, falselyStarted, playersIn,
 p1Total, p2Total, p3Total, p4Total, p1Place, p2Place, p3Place, p4Place,
 playersLeft, allNaughtyBois, p1TotalNew, p2TotalNew, p3TotalNew, p4TotalNew, midCalcinish);
 assign p1Total = p1TotalNew;
