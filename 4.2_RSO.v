@@ -24,6 +24,7 @@ module random_delay_gen (
     input  wire        clk,
     input  wire        rst,
     input  wire        tetiklenme,       // BTNC pulse (tek cycle'lik)
+    input  wire        turnOver,
     input  wire [15:0] lfsr_deger,    // lfsr16 modulunden gelen anlik deger
     input  wire        zorluk,    // 0 = kolay, 1 = zor
     output reg  [29:0] sure_bekleme,   // hesaplanan bekleme suresi (cycle)
@@ -41,6 +42,8 @@ module random_delay_gen (
     reg [29:0] ara;
     reg [45:0] asil_sonuc;   // 16 bit * 30 bit = 46 bit genislik
     reg        asama1_gecerli, asama2_gecerli;
+    
+    reg tetik;
 
     // Zorluk secimine gore min/span degerlerini belirle (kombinasyonel)
     always @(*) begin
@@ -64,7 +67,12 @@ module random_delay_gen (
             sure_bekleme_gecerli <= 1'b0;
         end else begin
             // Stage 0 -> 1: trigger geldiginde LFSR'yi yakala ve carpmayi baslat
-            if (tetiklenme) begin
+            if(tetiklenme) begin
+            tetik <= 1'b1;
+            end else if(turnOver)begin
+            tetik <= 1'b0;
+            end
+            if (tetik) begin
                 lfsr_anlik <= lfsr_deger;
                 asil_sonuc   <= lfsr_deger * ara;   // span, ayni cycle'daki (*) kombinasyonel degeri
                 asama1_gecerli  <= 1'b1;
