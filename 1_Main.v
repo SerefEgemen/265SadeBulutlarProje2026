@@ -45,13 +45,16 @@ debounce dbC(btnC, clk, rst, centerForConfigSpecifically);
 //Config Menu
 wire hardMode;
 wire elimination;
-wire[3:0] playersIn;
+reg[3:0] playersIn;
+wire[3:0] playersLeft;
 wire[3:0] turnNo;
-wire[3:0] currentTurn;
+reg[3:0] currentTurn;
 wire[15:0] ledsConfig;
 wire confinish; //config is over
-ConfigMenu configM(clk, rst, sw[2:0], sw[7:4], sw[9], sw[11], centerForConfigSpecifically, playersIn, turnNo, currentTurn, elimination, hardMode, confinish, ledsConfig);
-
+ConfigMenu configM(clk, rst, sw[2:0], sw[7:4], sw[9], sw[11], centerForConfigSpecifically, playersLeft, turnNo, elimination, hardMode, confinish, ledsConfig);
+always@(playersLeft)begin
+playersIn = playersLeft;
+end
 //Debouncing other buttons
 TusKontrolu buttons(clk, rst, playersIn, btnC, btnU, btnL, btnR, btnD, center, up, left, right, down);
 
@@ -69,36 +72,47 @@ random_delay_gen RNGesus(clk, rst, center, turnOver, randVal, hardMode, waitTime
 
 
 //The Game Loop
-wire gameOver;
+reg gameOver;
 wire displinish;
 wire calcinish;
 wire turnOffDisplay;
 wire[29:0] p1Time, p2Time, p3Time, p4Time;
 wire[3:0] timedOut, falselyStarted, allNaughtyBois;
 wire[3:0] currentTurnNew;
-
-gameLoop theMainTroublemaker(clk, rst, confinish, displinish, calcinish, waitTimeValid, turnNo, currentTurn, playersIn, waitTime, up, down, left, right, center, p1Time, p2Time, p3Time, p4Time, timedOut, falselyStarted, currentTurnNew, gameOver, turnOver, turnOffDisplay);
-assign currentTurn = currentTurnNew;
+wire[3:0] testTurn = 4'b0100;
+gameLoop theMainTroublemaker(clk, rst, confinish, displinish, calcinish, waitTimeValid, testTurn, currentTurn, playersIn, waitTime, up, down, left, right, center, p1Time, p2Time, p3Time, p4Time, timedOut, falselyStarted, currentTurnNew, gameOverNew, turnOver, turnOffDisplay);
+always@(currentTurnNew) begin
+currentTurn = currentTurnNew;
+end
+always@(gameOverNew) begin
+gameOver = gameOverNew;
+end
 //7Segment Display
 segmentDisplay7 countVonCount(clk, rst, currentTurn, turnOffDisplay, seg, an, displinish);
 
 //Score Calculator
 
 //Mid Game Score Calculator
-wire[6:0] p1Total, p2Total, p3Total, p4Total;
+reg[6:0] p1Total, p2Total, p3Total, p4Total;
 wire[6:0] p1TotalNew, p2TotalNew, p3TotalNew, p4TotalNew;
-wire[3:0] playersLeft;
 wire[1:0] p1Place, p2Place, p3Place, p4Place; //for one round only, totals will determine the final order.
 wire midCalcinish;
 ScoreCalc calcIsShortForCalculatorBtw(clk, rst, elimination, gameOver, turnOver, 
 p1Time, p2Time, p3Time, p4Time, timedOut, falselyStarted, playersIn,
 p1Total, p2Total, p3Total, p4Total, p1Place, p2Place, p3Place, p4Place,
 playersLeft, allNaughtyBois, p1TotalNew, p2TotalNew, p3TotalNew, p4TotalNew, midCalcinish);
-assign p1Total = p1TotalNew;
-assign p2Total = p2TotalNew;
-assign p3Total = p3TotalNew;
-assign p4Total = p4TotalNew;
-assign playersIn = playersLeft;
+always@(p1TotalNew)begin
+p1Total = p1TotalNew;
+end
+always@(p2TotalNew)begin
+p2Total = p2TotalNew;
+end
+always@(p3TotalNew)begin
+p3Total = p3TotalNew;
+end
+always@(p4TotalNew)begin
+p4Total = p4TotalNew;
+end
 //Endgame Score Calculator
 wire[3:0] winners;
 wire[6:0] winnerscore;
