@@ -77,7 +77,7 @@ wire[29:0] p1Time, p2Time, p3Time, p4Time;
 wire[3:0] timedOut, falselyStarted, allNaughtyBois;
 wire[3:0] currentTurnNew;
 
-gameLoop theMainTroublemaker(clk, rst, confinish, displinish, calcinish, turnNo, currentTurn, playersIn, up, down, left, right, center, p1Time, p2Time, p3Time, p4Time, timedOut, falselyStarted, currentTurnNew, gameOver, turnOver, turnOffDisplay);
+gameLoop theMainTroublemaker(clk, rst, confinish, displinish, calcinish, waitTimeValid, turnNo, currentTurn, playersIn, waitTime, up, down, left, right, center, p1Time, p2Time, p3Time, p4Time, timedOut, falselyStarted, currentTurnNew, gameOver, turnOver, turnOffDisplay);
 assign currentTurn = currentTurnNew;
 
 
