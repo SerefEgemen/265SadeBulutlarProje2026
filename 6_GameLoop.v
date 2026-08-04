@@ -45,6 +45,7 @@ module gameLoop(
     );
     
     reg[2:0] current_state, next_state;
+    current_state <= IDLE;
     
     reg[2:0] noOfPlayers = 3'b000;
 
@@ -71,25 +72,29 @@ module gameLoop(
         CONFIG: begin
             if(configModeFinished) begin
             next_state <= WAIT;
+                $display("wait");
             end
         end
         
-        WAIT: if(timeGenFinished) next_state <= TURN;
+        WAIT: if(timeGenFinished) next_state <= TURN; $display("turn");
         
         TURN: begin
             if(turnOver) begin
             next_state <= CALC;
+                $display("calc");
             end
         end
         CALC: begin
             if(gameOver) begin
             next_state <= END;
+                $display("end");
             end else if(ScoreCalcFinished) begin
             next_state <= TURN;
+                $display("turn");
             end
         end
-        END: next_state <= IDLE;
-        IDLE: if(!rst) next_state <= CONFIG; //goes auto to config, and it will cycle if it is in a state after config
+        END: next_state <= IDLE; $display("idle");
+        IDLE: if(!rst) next_state <= CONFIG; $display("config");//goes auto to config, and it will cycle if it is in a state after config
         default: next_state <= IDLE;
         
     endcase
