@@ -57,7 +57,7 @@ module UART_TX (
         IDLE: if(!rst) next_state <= FREE; 
         FREE: if(!state_UARDTX) next_state <= SEND;
         SEND: if(bit_index == 8) next_state <= DOWN; 
-        DOWN: ; //will auto send inside the code case. it's a counting down machine. send does it before sending data too
+        DOWN: if(saved_data == 0) next_state <= IDLE;  //will auto send inside the code case. it's a counting down machine. send does it before sending data too
         default: next_state = IDLE; //send to idle immediately, will go to next states if in those states of course.
     endcase
     end
@@ -141,7 +141,6 @@ module UART_TX (
                 end else begin
                     clock_count <= 0;
                     saved_data <= 0;
-                    next_state <= IDLE; //everything is complete so ship to idle
                 end
                 
             end
