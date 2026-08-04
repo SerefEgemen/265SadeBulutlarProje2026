@@ -48,7 +48,7 @@ input kararmaSinyali, //LSFR modülünden gelen Displaydeki ışıkları söndü
 
 output reg[6:0]  seg, 
 output reg[3:0] an, 
-output bitisSinyali // sayma işlemi bittiği zaman 1 değerini alır.
+output reg bitisSinyali // sayma işlemi bittiği zaman 1 değerini alır.
 
 );
 
@@ -73,6 +73,7 @@ always@(*) begin
     end
 
     if(!resetSW15 && !kararmaSinyali) begin
+    
 
         if(turNumarasi[0] == 1'b0) begin //Tur numarası çift sayı iken Displayde gösterilecek sayı sıralaması. Eğer sayının least significant biti 0 ise sayı tamamen çift sayıların toplamından oluşuyordur. Bu durumda sayı çift olacaktır çiftlik kontrolü yapılırken LSB ye bakılır.
            
@@ -216,8 +217,6 @@ end
 
 end
 
-assign bitisSinyali = bitis;
-
 always@(posedge clk) begin
     
     if(resetSW15 || kararmaSinyali) begin
@@ -243,7 +242,7 @@ always@(posedge clk) begin
         end
 
     end
-
+   bitisSinyali <= bitis;
 end
 
 always@(posedge clk) begin
