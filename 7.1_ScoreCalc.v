@@ -97,6 +97,8 @@ module ScoreCalc(input clk, rst, eliminate, gameOver, turnOver, input[29:0] play
 output reg[1:0] player1Place, player2Place, player3Place, player4Place, output reg[3:0] playersLeft, playersPenalized, output reg[6:0] player1newTotal, player2newTotal, player3newTotal, player4newTotal, output reg calcDone
     );
     
+    reg done <= 1'b0;
+    
     always@(posedge clk) begin
     if(rst) begin
         player1Place <= 2'b00;
@@ -110,6 +112,7 @@ output reg[1:0] player1Place, player2Place, player3Place, player4Place, output r
         player3newTotal <= 7'b0;
         player4newTotal <= 7'b0;
         calcDone <= 1'b0;
+        reg done <= 1'b0;
     end else begin
     if(!gameOver) begin //only works if it's mid-game
     if(!calcDone) begin
@@ -171,8 +174,10 @@ output reg[1:0] player1Place, player2Place, player3Place, player4Place, output r
                 end
             end
         end
-        
-        
+            
+        done <= 1'b1;
+            
+        if(done) begin
         //now we have the updated player list, we can calculate placements and scores
         
         if(playersIn[0]) begin //player1's placement
@@ -354,7 +359,10 @@ output reg[1:0] player1Place, player2Place, player3Place, player4Place, output r
             end
         end
         
-        calcDone <= 1'b1;
+            calcDone <= 1'b1;
+            done <= 1'b0;
+            end//done check
+            
         end//turnOver
         
     end else begin //calcdone check
