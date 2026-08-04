@@ -10,7 +10,7 @@ input[3:0] winners, input[6:0] winnerScore, input tieExists,
     
     
     output reg tx_start,
-    output reg [7:0] tx_data,
+    output reg [7:0] tx_data
     
 );
 // Sabit mesajlar (ASCII karakter dizileri)
