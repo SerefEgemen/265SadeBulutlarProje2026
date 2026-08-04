@@ -46,7 +46,7 @@ initial begin
     wnrMsg[0]=8'h57; wnrMsg[1]=8'h4E; wnrMsg[2]=8'h52; wnrMsg[3]=8'h3A; wnrMsg[4]=8'h20;
 end
 
-// ================== FSM durum kodlamalar˝ (mid-game) ==================
+// ================== FSM durum kodlamalar√Ω (mid-game) ==================
 localparam IDLE            = 0;
 localparam CHECK_END_COND  = 1;
 localparam TX_NORMAL_TURN  = 2;
@@ -60,7 +60,7 @@ localparam DONE            = 8;
 reg [3:0] state;
 reg [3:0] char_index;
 
-// ================== FSM durum kodlamalar˝ (endgame) ==================
+// ================== FSM durum kodlamalar√Ω (endgame) ==================
 localparam EG_IDLE        = 0;
 localparam EG_CHECK_TIE   = 1;
 localparam EG_TX_TIE_MSG  = 2;
@@ -71,11 +71,11 @@ localparam EG_DONE        = 6;
 
 reg [3:0] eg_state;
 reg [3:0] eg_char_index;
-reg [1:0] player_index; // hangi oyuncu bitini yazd˝˝m˝z˝ takip eder (0-3)
+reg [1:0] player_index; // hangi oyuncu bitini yazd√Ω√∞√Ωm√Ωz√Ω takip eder (0-3)
 
 // ================== BCD Converter ==================
 wire [3:0]  onlar, birler;
-reg  [3:0] yuzler; // skor max 64 olduundan y¸zler hanesi hep 0
+reg  [3:0] yuzler; // skor max 64 oldu√∞undan y√ºzler hanesi hep 0
 
 Binary_to_BCD bcd1 (
     .binary_in(winnerScore),
@@ -84,11 +84,11 @@ Binary_to_BCD bcd1 (
 );
 
 always @(*) begin
-    yuzler = 4'd0; // BCD mod¸l¸ y¸zler hanesi Á˝k˝˛˝ vermedii iÁin sabit
+    yuzler = 4'd0; // BCD mod√ºl√º y√ºzler hanesi √ß√Ωk√Ω√æ√Ω vermedi√∞i i√ßin sabit
 end
 
-// ================== Zaman -> ASCII fonksiyonu (mod¸l seviyesinde) ==================
-// p1Time (30 bit cycle say˝s˝) -> "a.bc" ASCII, 4 byte dˆnd¸r¸r
+// ================== Zaman -> ASCII fonksiyonu (mod√ºl seviyesinde) ==================
+// p1Time (30 bit cycle say√Ωs√Ω) -> "a.bc" ASCII, 4 byte d√∂nd√ºr√ºr
 // {saniye_ascii, nokta_ascii, onlar_santisaniye_ascii, birler_santisaniye_ascii}
 function [31:0] time_to_ascii;
     input [29:0] cycles;
@@ -193,13 +193,13 @@ always @(posedge clk) begin
                             tx_data <= 8'h3A; // ':'
                             tx_start <= 1;
                         end else if (char_index == 2) begin
-                            tx_data <= yuzler + 8'h30; // Y¸zler basamag˝
+                            tx_data <= yuzler + 8'h30; // Y√ºzler basamag√Ω
                             tx_start <= 1;
                         end else if (char_index == 3) begin
-                            tx_data <= onlar + 8'h30;  // Onlar basamag˝
+                            tx_data <= onlar + 8'h30;  // Onlar basamag√Ω
                             tx_start <= 1;
                         end else if (char_index == 4) begin
-                            tx_data <= birler + 8'h30; // Birler basamag˝
+                            tx_data <= birler + 8'h30; // Birler basamag√Ω
                             tx_start <= 1;
                         end else begin
                             state <= DONE;
@@ -211,8 +211,8 @@ always @(posedge clk) begin
                 end
 
                 TX_NORMAL_TURN: begin
-                    // Normal tur verilerini bas (S¸reler, cezalar vs.)
-                    // time_to_ascii fonksiyonu burada p1Time..p4Time iÁin kullanilabilir
+                    // Normal tur verilerini bas (S√ºreler, cezalar vs.)
+                    // time_to_ascii fonksiyonu burada p1Time..p4Time i√ßin kullanilabilir
                     state <= DONE;
                 end
 
@@ -239,7 +239,7 @@ always @(posedge clk) begin
                     else            eg_state <= EG_TX_WNR_MSG;
                 end
 
-                // "TIE: " yazd˝r
+                // "TIE: " yazd√Ωr
                 EG_TX_TIE_MSG: begin
                     if (tx_free && !tx_start) begin
                         if (eg_char_index < 5) begin
@@ -256,7 +256,7 @@ always @(posedge clk) begin
                     end
                 end
 
-                // "WNR: " yazd˝r
+                // "WNR: " yazd√Ωr
                 EG_TX_WNR_MSG: begin
                     if (tx_free && !tx_start) begin
                         if (eg_char_index < 5) begin
@@ -273,8 +273,8 @@ always @(posedge clk) begin
                     end
                 end
 
-                // winners[3:0] iÁindeki kazanan oyuncu numaralar˝n˝ yazd˝r (ˆr: "1 3 " gibi)
-                // Kazanmayan oyuncular tx_free beklemeden, ayn˝ cycle'da atlan˝r.
+                // winners[3:0] i√ßindeki kazanan oyuncu numaralar√Ωn√Ω yazd√Ωr (√∂r: "1 3 " gibi)
+                // Kazanmayan oyuncular tx_free beklemeden, ayn√Ω cycle'da atlan√Ωr.
                 EG_TX_WINNERS: begin
                     if (player_index < 4) begin
                         if (winners[player_index]) begin
@@ -286,7 +286,7 @@ always @(posedge clk) begin
                                 tx_start <= 0; // tx_free gelene kadar bekle
                             end
                         end else begin
-                            // bu oyuncu kazanmad˝, hemen bir sonrakine geÁ
+                            // bu oyuncu kazanmad√Ω, hemen bir sonrakine ge√ß
                             player_index <= player_index + 1;
                         end
                     end else begin
@@ -294,7 +294,7 @@ always @(posedge clk) begin
                     end
                 end
 
-                // " / " + skor (onlar/birler basama˝, bcd1'den geliyor) + \r\n
+                // " / " + skor (onlar/birler basama√∞√Ω, bcd1'den geliyor) + \r\n
                 EG_TX_SCORE: begin
                     if (tx_free && !tx_start) begin
                         if (eg_char_index == 0) begin
@@ -319,7 +319,7 @@ always @(posedge clk) begin
                 end
 
                 EG_DONE: begin
-                    // Sistem s˝f˝rlanana veya yeni oyun baslayana kadar bekle
+                    // Sistem s√Ωf√Ωrlanana veya yeni oyun baslayana kadar bekle
                     if (!scoreCalcDone) eg_state <= EG_IDLE;
                 end
 
