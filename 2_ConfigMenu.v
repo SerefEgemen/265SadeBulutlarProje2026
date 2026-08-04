@@ -60,6 +60,7 @@ module ConfigMenu(input clk, reset, input[2:0] playerNoInput, input[3:0] turnNoI
     leds[7:4] <= turnNoInput;
     leds[9] <= eliminationInput;
     leds[11] <= hardInput;
+    leds[15] <= 1'b0;
     
     
     
