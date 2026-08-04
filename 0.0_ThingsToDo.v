@@ -330,7 +330,23 @@ random_delay_gen_tb     Egemen
 
 
  
+ August 4th, Time: 23:40
+ So far we have found out:
+ That we can't reach the end of turns,
+ We don't know if the score calculator works or not.(The LEDs don't work)
+ We don't know where the UART output is, so we don't know if that works.
  
+ We do know that:
+ the hard mode works
+ the config mode works
+ the gameLoop works
+ the 7 segment display, lfsr, and wait time generator all work
+ If scoreCalc is working, elimination mode works.
+ 
+ As a team of 4 people, most of which were not able to code on Vivado due to various reasons, this is as far as we can get
+ 
+ Signed: Mete Sipahi
+ The guy who somehow became the project coordinator of Sade Bulutlar. Even though he didn't want to be.
  
  
  
