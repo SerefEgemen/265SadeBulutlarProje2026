@@ -1,4 +1,4 @@
-module UART_Controller ( input clk, rst, gameOver, scoreCalcDone,
+module UART_Controller ( input clk, rst, gameOver, scoreCalcDone, tx_free
 /*inputs needed for mid-Game displays -MT*/
 input[3:0] currentTurn, playersIn, timeoutPlayers, falseStartPlayers,
 input[6:0] p1Total, p2Total, p3Total, p4Total,
@@ -11,7 +11,7 @@ input[3:0] winners, input[6:0] winnerScore, input tieExists,
     
     output reg tx_start,
     output reg [7:0] tx_data,
-    input wire tx_busy
+    
 );
 // Sabit mesajlar (ASCII karakter dizileri)
 reg [7:0] oyunBittiMsg [0:11];
@@ -105,7 +105,7 @@ endfunction
 
 
                TX_GAME_OVER_MSG: begin
-    if (!tx_busy && !tx_start) begin
+            if (tx_free && !tx_start) begin
         if (char_index < 12) begin
             tx_data <= oyunBittiMsg[char_index];
             tx_start <= 1;
@@ -115,7 +115,7 @@ endfunction
         end
     end else begin
         tx_start <= 0;
-        if (!tx_busy) char_index <= char_index + 1;
+        if (tx_free) char_index <= char_index + 1;
     end
 end
 
@@ -135,7 +135,7 @@ end
 
 
               TX_TIE_MSG: begin
-    if (!tx_busy && !tx_start) begin
+        if (tx_free && !tx_start) begin
         if (char_index < 13) begin
             tx_data <= berabereMsg[char_index];
             tx_start <= 1;
@@ -145,7 +145,7 @@ end
         end
     end else begin
         tx_start <= 0;
-        if (!tx_busy) char_index <= char_index + 1;
+        if (tx_free) char_index <= char_index + 1;
     end
 end
 
@@ -155,7 +155,7 @@ end
 
 
                 TX_WINNER_MSG: begin
-    if (!tx_busy && !tx_start) begin
+        if (tx_free && !tx_start) begin
         if (char_index < 13) begin
             tx_data <= kazananMsg[char_index];
             tx_start <= 1;
@@ -165,7 +165,7 @@ end
         end
     end else begin
         tx_start <= 0;
-        if (!tx_busy) char_index <= char_index + 1;
+        if (tx_free) char_index <= char_index + 1;
     end
 end
 
@@ -174,7 +174,7 @@ end
 
 
                 TX_PRINT_SCORE: begin
-                    if (!tx_busy && !tx_start) begin
+                    if (tx_free && !tx_start) begin
                         if (char_index == 0) begin
                             tx_data <= 8'h50; // 'P'
                             tx_start <= 1;
@@ -195,7 +195,7 @@ end
                         end
                     end else begin
                         tx_start <= 0; 
-                        if (!tx_busy) char_index <= char_index + 1;
+                        if (tx_free) char_index <= char_index + 1;
                     end
                 end
 
@@ -247,3 +247,13 @@ end
         end
     end
 endmodule
+
+
+/*
+                ;'-. 
+    `;-._        )  '---.._
+      >  `-.__.-'          `'.__
+     /_.-'-._         _,   ^ ---)
+     `       `'------/_.'----```
+                     `
+*/
