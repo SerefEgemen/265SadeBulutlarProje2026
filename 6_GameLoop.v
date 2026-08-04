@@ -41,7 +41,7 @@ module gameLoop(
     input BTNC,
     output reg[29:0] player1Time, player2Time, player3Time, player4Time,
     output reg[3:0] timedOutPlayers, falseStartPlayers, currentTurnNew,
-    output reg gameOver, turnOver, blackout
+    output reg gameOverNew, turnOver, blackout
     );
     
     reg[2:0] current_state, next_state;
@@ -89,7 +89,7 @@ module gameLoop(
             end
         end
         CALC: begin
-            if(gameOver) begin
+            if(gameOverNew) begin
             next_state <= END;
             end else if(ScoreCalcFinished) begin
             next_state <= TURN;
@@ -126,7 +126,7 @@ module gameLoop(
             if(rst) begin
                 currentTurnNew <= 4'd0;
             end 
-        gameOver <= 1'b0;
+        gameOverNew <= 1'b0;
         turnOver <= 1'b0;
         blackout <= 1'b1;
         timer = 30'd0;
@@ -238,28 +238,25 @@ module gameLoop(
         if(BTNC) begin //waiting for another btnc before advancing.
             
             //current turn is an input, so it should go up! gameOver is an output, so i adjust it by checking here.
-            currentTurnNew <= (currentTurnNew + 1'b1);
-            if(currentTurnNew >= turnNo)begin
-                gameOver <= 1'b1;
-            end else begin
-                noOfPlayers <= (playerNo[0] + playerNo[1] + playerNo[2] + playerNo[3]);
-                
-                if(noOfPlayers < 2) begin
-                    gameOver <= 1'b1;
-                end else begin //new turn incoming, everything used need to be wiped clean again
+            currentTurnNew <= (currentTurnNew + 1);
+            //new turn incoming, everything used need to be wiped clean again
                     player1Time <= 30'd0;
                     player2Time <= 30'd0;
                     player3Time <= 30'd0;
                     player4Time <= 30'd0;
                     timedOutPlayers <= 4'd0;
                     falseStartPlayers <= 4'd0;
-                    gameOver <= 1'b0;
+                    gameOverNew <= 1'b0;
                     turnOver <= 1'b0;
                     blackout <= 1'b1;
                     timer <= 30'd0;
                     timer2 = 0;
                     noOfPlayers <= 3'b000;
-                end
+                
+               if(currentTurn > turnNo)begin
+               gameOverNew <= 1'b1;
+            end else begin
+            gameOverNew <= 1'b0;
             end
         end
         
