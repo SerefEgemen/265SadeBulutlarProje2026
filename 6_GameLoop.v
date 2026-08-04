@@ -45,13 +45,12 @@ module gameLoop(
     );
     
     reg[2:0] current_state, next_state;
-    current_state <= IDLE;
     
     reg[2:0] noOfPlayers = 3'b000;
 
     //timer stuff
-    reg TIME_LIMIT = 500000000; //0.5 seconds
-    reg timer = 0;
+    reg[29:0] TIME_LIMIT = 30'd500000000; //0.5 seconds
+    reg[29:0] timer = 0;
     reg timer2 = 0; //to multiply TIME_LIMIT by 10 within code to make 5 seconds happen
     
     localparam IDLE = 3'b000;
@@ -60,6 +59,8 @@ module gameLoop(
     localparam TURN = 3'b010;
     localparam CALC = 3'b110;
     localparam END = 3'b111;
+    
+    //assign current_state = IDLE;
     
     //preferred a gray code system to lower power cost + reduce practical errors
     
@@ -72,11 +73,14 @@ module gameLoop(
         CONFIG: begin
             if(configModeFinished) begin
             next_state <= WAIT;
-                $display("wait");
             end
         end
         
-        WAIT: if(timeGenFinished) next_state <= TURN; $display("turn");
+        WAIT: begin
+         if(displayModeFinished) next_state <= TURN; begin
+          $display("turn");
+          end
+          end
         
         TURN: begin
             if(turnOver) begin
@@ -87,14 +91,18 @@ module gameLoop(
         CALC: begin
             if(gameOver) begin
             next_state <= END;
-                $display("end");
             end else if(ScoreCalcFinished) begin
             next_state <= TURN;
-                $display("turn");
             end
         end
-        END: next_state <= IDLE; $display("idle");
-        IDLE: if(!rst) next_state <= CONFIG; $display("config");//goes auto to config, and it will cycle if it is in a state after config
+        END: begin
+         next_state <= IDLE;
+         end
+        IDLE: begin
+         if(!rst) begin
+          next_state <= CONFIG;
+         end 
+         end
         default: next_state <= IDLE;
         
     endcase
@@ -115,7 +123,9 @@ module gameLoop(
         player4Time <= 30'd0;
         timedOutPlayers <= 4'd0;
         falseStartPlayers <= 4'd0;
-        currentTurnNew <= 4'd0;
+            if(rst) begin
+                currentTurnNew <= 4'd0;
+            end 
         gameOver <= 1'b0;
         turnOver <= 1'b0;
         blackout <= 1'b1;
@@ -130,7 +140,25 @@ module gameLoop(
     end
     end //give the signal for 7Segment
     
-    WAIT: begin end //nothing to do
+    WAIT: begin 
+    blackout <= 1'b0;
+       if(BTNU && playerNo[0]) begin
+           falseStartPlayers[0] <= 1'b1;
+           timedOutPlayers[0] <= 1'b0;
+       end
+       if(BTNL && playerNo[1]) begin
+           falseStartPlayers[1] <= 1'b1;
+           timedOutPlayers[1] <= 1'b0;
+       end
+       if(BTNR && playerNo[2]) begin
+           falseStartPlayers[2] <= 1'b1;
+           timedOutPlayers[2] <= 1'b0;
+       end
+       if(BTND && playerNo[3]) begin
+           falseStartPlayers[3] <= 1'b1;
+           timedOutPlayers[3] <= 1'b0;
+       end
+    end //nothing to do
     
     TURN: begin 
     /* 
@@ -150,32 +178,30 @@ module gameLoop(
         timedOutPlayers[3] <= 1'b1;
     end
     
-    blackout <= 1'b0;
+    
          
-    if(!displayModeFinished) begin
-    if(timer <= waitTime && !blackout) begin
-       if(BTNU && playerNo[0]) begin
-           falseStartPlayers[0] <= 1'b1;
-           timedOutPlayers[0] <= 1'b0;
-       end
-       if(BTNL && playerNo[1]) begin
-           falseStartPlayers[1] <= 1'b1;
-           timedOutPlayers[1] <= 1'b0;
-       end
-       if(BTNR && playerNo[2]) begin
-           falseStartPlayers[2] <= 1'b1;
-           timedOutPlayers[2] <= 1'b0;
-       end
-       if(BTND && playerNo[3]) begin
-           falseStartPlayers[3] <= 1'b1;
-           timedOutPlayers[3] <= 1'b0;
-       end
-       timer <= timer + 1;
-    end else begin
-    blackout <= 1'b1;
-    timer <= 0;
-    end
-    end else if(displayModeFinished) begin
+    if((timer <= waitTime) && !blackout) begin
+            if(BTNU && playerNo[0]) begin
+               falseStartPlayers[0] <= 1'b1;
+               timedOutPlayers[0] <= 1'b0;
+           end
+           if(BTNL && playerNo[1]) begin
+               falseStartPlayers[1] <= 1'b1;
+               timedOutPlayers[1] <= 1'b0;
+           end
+           if(BTNR && playerNo[2]) begin
+               falseStartPlayers[2] <= 1'b1;
+               timedOutPlayers[2] <= 1'b0;
+           end
+           if(BTND && playerNo[3]) begin
+               falseStartPlayers[3] <= 1'b1;
+               timedOutPlayers[3] <= 1'b0;
+           end
+            timer <= timer + 1;
+    end else if (timer > waitTime)begin
+            blackout <= 1'b1;
+            timer <= 0;
+    end else if(blackout)begin
   
     if(timer2 < 10) begin
        if(timer <= TIME_LIMIT) begin
@@ -212,8 +238,8 @@ module gameLoop(
         if(BTNC) begin //waiting for another btnc before advancing.
             
             //current turn is an input, so it should go up! gameOver is an output, so i adjust it by checking here.
-            currentTurnNew <= (currentTurn + 1'b1);
-            if(currentTurnNew > turnNo)begin
+            currentTurnNew <= (currentTurnNew + 1'b1);
+            if(currentTurnNew >= turnNo)begin
                 gameOver <= 1'b1;
             end else begin
                 noOfPlayers <= (playerNo[0] + playerNo[1] + playerNo[2] + playerNo[3]);
@@ -227,7 +253,6 @@ module gameLoop(
                     player4Time <= 30'd0;
                     timedOutPlayers <= 4'd0;
                     falseStartPlayers <= 4'd0;
-                    currentTurnNew <= 4'd0;
                     gameOver <= 1'b0;
                     turnOver <= 1'b0;
                     blackout <= 1'b1;
