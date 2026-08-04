@@ -140,7 +140,7 @@ module UART_TX (
                     clock_count <= clock_count + 1; //same thing here. time frame for all devices to have a breathing room. 
                 end else begin
                     clock_count <= 0;
-                    saved_date <= 0;
+                    saved_data <= 0;
                     next_state <= IDLE; //everything is complete so ship to idle
                 end
                 
