@@ -148,7 +148,7 @@ always@(*) begin
             
             if(sayac < 30'd99_999_999) begin //Display üzerinde yalnızca 1 segmentin gösterileceği blok.               
                 an = 4'b0111;
-                seg = 7'b0100100; //Display üzerinde 5 sayısını gösterir.
+                seg = 7'b0010010; //Display üzerinde 5 sayısını gösterir.
             end
             
             else if(sayac < 30'd199_999_999) begin // Display üzerinde 2 segmentin gösterileceği blok. İçerisinde 2 segmente erişen if blokları mevcut.                
@@ -156,12 +156,12 @@ always@(*) begin
 
                 if(haneSayici == 2'd0) begin                    
                     an = 4'b0111;
-                    seg = 7'b0100100; //Display üzerinde 5 sayısını gösterir.
+                    seg = 7'b0010010; //Display üzerinde 5 sayısını gösterir.
                 end
                 
                 if(haneSayici == 2'd1) begin                    
                     an = 4'b1011;
-                    seg = 7'b0100000; //Display üzerinde 6 sayısını gösterir.
+                    seg = 7'b0000010; //Display üzerinde 6 sayısını gösterir.
                 end
 
             end
@@ -171,17 +171,17 @@ always@(*) begin
 
                 if(haneSayici == 2'd0) begin                    
                     an = 4'b0111;
-                    seg = 7'b0100100; //Display üzerinde 5 sayısını gösterir.
+                    seg = 7'b0010010; //Display üzerinde 5 sayısını gösterir.
                 end
 
                 if(haneSayici == 2'd1) begin                    
                     an = 4'b1011;
-                    seg = 7'b0100000; //Display üzerinde 6 sayısını gösterir.
+                    seg = 7'b0000010; //Display üzerinde 6 sayısını gösterir.
                 end
 
                 if(haneSayici == 2'd2) begin                    
                     an = 4'b1101;
-                    seg = 7'b0001111; //Display üzerinde 7 sayısını gösterir.                    
+                    seg = 7'b1111000; //Display üzerinde 7 sayısını gösterir.                    
                 end
 
             end
@@ -191,17 +191,17 @@ always@(*) begin
 
                 if(haneSayici == 2'd0) begin                    
                     an = 4'b0111;
-                    seg = 7'b0100100; //Display üzerinde 5 sayısını gösterir
+                    seg = 7'b0010010; //Display üzerinde 5 sayısını gösterir
                 end
 
                 if(haneSayici == 2'd1) begin                   
                     an = 4'b1011;
-                    seg = 7'b0100000; //Display üzerinde 6 sayısını gösterir
+                    seg = 7'b0000010; //Display üzerinde 6 sayısını gösterir
                 end
 
                 if(haneSayici == 2'd2) begin          
                     an = 4'b1101;
-                    seg = 7'b0001111; //Display üzerinde 7 sayısını gösterir
+                    seg = 7'b1111000; //Display üzerinde 7 sayısını gösterir
                 end
 
                 if(haneSayici == 2'd3) begin                    
