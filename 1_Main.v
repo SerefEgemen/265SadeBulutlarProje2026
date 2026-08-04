@@ -64,12 +64,12 @@ lfsr16 lfsrModule(clk, rst, randVal);
 //Wait time generator
 wire[29:0] waitTime;
 wire waitTimeValid;
-random_delay_gen RNGesus(clk, rst, center, randVal, hardMode, waitTime, waitTimeValid);
+wire turnOver;
+random_delay_gen RNGesus(clk, rst, center, turnOver, randVal, hardMode, waitTime, waitTimeValid);
 
 
 //The Game Loop
 wire gameOver;
-wire turnOver;
 wire displinish;
 wire calcinish;
 wire turnOffDisplay;
@@ -79,8 +79,6 @@ wire[3:0] currentTurnNew;
 
 gameLoop theMainTroublemaker(clk, rst, confinish, displinish, calcinish, waitTimeValid, turnNo, currentTurn, playersIn, waitTime, up, down, left, right, center, p1Time, p2Time, p3Time, p4Time, timedOut, falselyStarted, currentTurnNew, gameOver, turnOver, turnOffDisplay);
 assign currentTurn = currentTurnNew;
-
-
 //7Segment Display
 segmentDisplay7 countVonCount(clk, rst, currentTurn, turnOffDisplay, seg, an, displinish);
 
