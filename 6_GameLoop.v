@@ -22,6 +22,9 @@ based on the fixes, i made adjustments. here are the notes:
 -made a clock. i know. revolutionary. testing has shown the usage of '$time' & '#5' to be un-simulatable - so, rewritten in manual counter. used the same logic i used in uart_tx.
 -checked for syntax errors. vivado sees 0.
 
+## patch 3 ##
+-wait time adoption
+
 hatırlatma:
 BTNC : BTNC basım kontrol tur ilerlemesi için [U18]
 player1 : BTNU [T18]
@@ -139,54 +142,67 @@ module gameLoop(
         timedOutPlayers[3] <= 1'b1;
     end
     
-        if(!displayModeFinished) begin
-            if(BTNU && playerNo[0]) begin
-                falseStartPlayers[0] <= 1'b1;
-                timedOutPlayers[0] <= 1'b0;
-            end
-            if(BTNL && playerNo[1]) begin
-                falseStartPlayers[1] <= 1'b1;
-                timedOutPlayers[1] <= 1'b0;
-            end
-            if(BTNR && playerNo[2]) begin
-                falseStartPlayers[2] <= 1'b1;
-                timedOutPlayers[2] <= 1'b0;
-            end
-            if(BTND && playerNo[3]) begin
-                falseStartPlayers[3] <= 1'b1;
-                timedOutPlayers[3] <= 1'b0;
-            end
-        end else if(displayModeFinished) begin
+    blackout <= 1'b0;
     
-        if(timer2 < 10) begin
-            if(timer <= TIME_LIMIT) begin
-                
-                    if(BTNU && !falseStartPlayers[0] && playerNo[0]) begin
-                        player1Time = timer;
-                        timedOutPlayers[0] = 1'b0;
-                    end
-                    if(BTNL && !falseStartPlayers[1] && playerNo[1]) begin
-                        player2Time = timer;
-                        timedOutPlayers[1] = 1'b0;
-                    end
-                    if(BTNR && !falseStartPlayers[2] && playerNo[2]) begin
-                        player3Time = timer;
-                        timedOutPlayers[2] = 1'b0;
-                    end
-                    if(BTND && !falseStartPlayers[3] && playerNo[3]) begin
-                        player4Time = timer;
-                        timedOutPlayers[3] = 1'b0;
-                    end
-                    
-                timer = timer + 1;
-                end //5 seconds of grace over, so i finish the turn after this.
-                timer = 0;
-                timer2 = timer2 + 1;
-            end
-            turnOver <= 1'b1; 
+    if(timeGenFinished)begin
+         
+    if(!displayModeFinished) begin
+    if(timer <= waitTime && !blackout) begin
+       if(BTNU && playerNo[0]) begin
+           falseStartPlayers[0] <= 1'b1;
+           timedOutPlayers[0] <= 1'b0;
+       end
+       if(BTNL && playerNo[1]) begin
+           falseStartPlayers[1] <= 1'b1;
+           timedOutPlayers[1] <= 1'b0;
+       end
+       if(BTNR && playerNo[2]) begin
+           falseStartPlayers[2] <= 1'b1;
+           timedOutPlayers[2] <= 1'b0;
+       end
+       if(BTND && playerNo[3]) begin
+           falseStartPlayers[3] <= 1'b1;
+           timedOutPlayers[3] <= 1'b0;
+       end
+       timer <= timer + 1;
+    end else begin
+    blackout <= 1'b1;
+    timer <= 0;
+    end
+    end else if(displayModeFinished) begin
+  
+    if(timer2 < 10) begin
+       if(timer <= TIME_LIMIT) begin
+             
+                if(BTNU && !falseStartPlayers[0] && playerNo[0]) begin
+                    player1Time = timer;
+                    timedOutPlayers[0] = 1'b0;
+                end
+                if(BTNL && !falseStartPlayers[1] && playerNo[1]) begin
+                    player2Time = timer;
+                    timedOutPlayers[1] = 1'b0;
+                end
+                if(BTNR && !falseStartPlayers[2] && playerNo[2]) begin
+                    player3Time = timer;
+                    timedOutPlayers[2] = 1'b0;
+                end
+                if(BTND && !falseStartPlayers[3] && playerNo[3]) begin
+                    player4Time = timer;
+                    timedOutPlayers[3] = 1'b0;
+                end
+                 
+           timer = timer + 1;
+           end //5 seconds of grace over, so i finish the turn after this.
+           timer = 0;
+           timer2 = timer2 + 1;
         end
         
-    end   
+        turnOver <= 1'b1; 
+    end
+    
+    end //timeGen
+
+    end   //case
     
     CALC: begin 
         if(BTNC) begin //waiting for another btnc before advancing.
