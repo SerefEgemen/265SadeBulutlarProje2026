@@ -138,7 +138,7 @@ module gameLoop(
         timedOutPlayers[3] <= 1'b1;
     end
     
-        if(!blackout) begin
+        if(!displayModeFinished) begin
             if(BTNU && playerNo[0]) begin
                 falseStartPlayers[0] <= 1'b1;
                 timedOutPlayers[0] <= 1'b0;
@@ -155,7 +155,7 @@ module gameLoop(
                 falseStartPlayers[3] <= 1'b1;
                 timedOutPlayers[3] <= 1'b0;
             end
-    end else if(blackout) begin
+        end else if(displayModeFinished) begin
     
         if(timer2 < 10) begin
             if(timer <= TIME_LIMIT) begin
