@@ -31,8 +31,9 @@ player4: BTND [U17]
 */
 
 module gameLoop(
-    input clk, rst, configModeFinished, displayModeFinished, ScoreCalcFinished,
+    input clk, rst, configModeFinished, displayModeFinished, timeGenFinished, ScoreCalcFinished,
     input[3:0] turnNo, currentTurn, playerNo,
+    input[29:0] waitTime,
     input BTNU,
     input BTND,
     input BTNL,
