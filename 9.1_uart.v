@@ -1,4 +1,4 @@
-module UART_Controller ( input clk, rst, gameOver, scoreCalcDone, tx_free
+module UART_Controller ( input clk, rst, gameOver, scoreCalcDone, tx_free,
 /*inputs needed for mid-Game displays -MT*/
 input[3:0] currentTurn, playersIn, timeoutPlayers, falseStartPlayers,
 input[6:0] p1Total, p2Total, p3Total, p4Total,
